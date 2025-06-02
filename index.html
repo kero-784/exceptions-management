@@ -237,8 +237,8 @@
 
     <script>
         // --- Configuration ---
-        // !!! IMPORTANT: Replace this with YOUR Google Apps Script Web App URL !!!
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec';
+        const URL_PLACEHOLDER = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'; // Define the placeholder for comparison
 
         // --- Global State ---
         let allSuppliersData = [];
@@ -273,9 +273,12 @@
             }
             content += message;
             element.innerHTML = content;
-            element.className = `message-area ${type}`; // Also ensure loader-container class isn't messing up
-            if (type === 'loading') element.classList.add('loader-container'); // Re-add if needed
-            else element.classList.remove('loader-container');
+            element.className = `message-area ${type}`;
+            if (type === 'loading' || type === 'info' && showLoaderIcon) { // Adjust for loading/info with loader
+                element.classList.add('loader-container');
+            } else {
+                 element.classList.remove('loader-container');
+            }
             element.style.display = 'block';
         }
 
@@ -287,9 +290,10 @@
         
         // --- Supplier Fetching & Handling ---
         async function fetchSuppliers() {
-            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec' || !GAS_WEB_APP_URL) {
-                showMessage(appStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف في الكود. يرجى تحديث الكود.", "error");
-                mainAppContentDiv.style.display = 'none'; // Keep main content hidden
+            // Corrected Check: If URL is the placeholder OR it's empty/whitespace
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER || !GAS_WEB_APP_URL.trim()) {
+                showMessage(appStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود. يرجى تحديث الكود.", "error");
+                mainAppContentDiv.style.display = 'none';
                 return false;
             }
             
@@ -298,9 +302,8 @@
             appStatusDiv.style.display = 'block';
             mainAppContentDiv.style.display = 'none';
 
-
             try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers');
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers'); // Ensure your GAS doGet handles this if needed
                 if (!response.ok) {
                     throw new Error(`خطأ في الشبكة: ${response.status} ${response.statusText}`);
                 }
@@ -443,7 +446,7 @@
                 if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
                 else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
                 else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); 
-                else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ"; // Default for empty code
+                else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ"; 
 
                 const dateInitialsPart = monthInitial + dayInitial;
                 const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
@@ -505,12 +508,13 @@
                 showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها. قم بتوليد الأكواد أولاً.", 'error');
                 return;
             }
-            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec' || !GAS_WEB_APP_URL) {
-                 showMessage(saveStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف في الكود.", 'error');
+            // Corrected Check: If URL is the placeholder OR it's empty/whitespace
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER || !GAS_WEB_APP_URL.trim()) {
+                 showMessage(saveStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود.", 'error');
                 return;
             }
 
-            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true); // Show loader in saveStatus
+            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true);
             saveToSheetBtn.disabled = true;
 
             try {
@@ -555,8 +559,8 @@
 
         // --- Initial Load ---
         function initializeApp() {
-            renderSelectedSuppliers(); // Initial render for selected list
-            fetchSuppliers(); // Directly fetch suppliers on load
+            renderSelectedSuppliers(); 
+            fetchSuppliers(); 
         }
 
         initializeApp();
