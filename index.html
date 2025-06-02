@@ -157,6 +157,10 @@
         .message-area.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
         .message-area.info { background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;}
 
+        .loader-container {
+            text-align: center;
+            padding: 20px;
+        }
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid var(--primary-color);
@@ -164,7 +168,8 @@
             width: 30px;
             height: 30px;
             animation: spin 1s linear infinite;
-            margin: 10px auto;
+            margin: 0 auto 10px auto;
+            display: inline-block;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -174,13 +179,10 @@
     <div class="app-container">
         <h1 class="app-header">مولد الأكواد المتقدم</h1>
 
-        <div id="configSection" class="form-section">
-            <label for="gasWebAppUrl">رابط Google Apps Script Web App:</label>
-            <input type="text" id="gasWebAppUrl" placeholder="الصق رابط Web App هنا">
-            <button id="loadConfigAndSuppliers" style="margin-top:10px;">تحميل الإعدادات والموردين</button>
-             <div id="appStatus" class="message-area" style="display:none;"></div>
+        <div id="appStatus" class="message-area loader-container" style="display:none;">
+            <div class="loader"></div>
+            <p>جاري تحميل البيانات...</p>
         </div>
-
 
         <div id="mainAppContent" style="display:none;">
             <div class="form-section">
@@ -235,7 +237,8 @@
 
     <script>
         // --- Configuration ---
-        let GAS_WEB_APP_URL = ''; // Will be set by user input
+        // !!! IMPORTANT: Replace this with YOUR Google Apps Script Web App URL !!!
+        const GAS_WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
         // --- Global State ---
         let allSuppliersData = [];
@@ -243,8 +246,6 @@
         let generatedOutputForSaving = null; // To store data for saving to sheet
 
         // --- DOM Elements ---
-        const gasWebAppUrlInput = document.getElementById('gasWebAppUrl');
-        const loadConfigAndSuppliersBtn = document.getElementById('loadConfigAndSuppliers');
         const appStatusDiv = document.getElementById('appStatus');
         const mainAppContentDiv = document.getElementById('mainAppContent');
 
@@ -265,30 +266,41 @@
         const saveStatusDiv = document.getElementById('saveStatus');
 
         // --- Utility Functions ---
-        function showMessage(element, message, type = 'error') {
-            element.innerHTML = message;
-            element.className = `message-area ${type}`;
+        function showMessage(element, message, type = 'error', showLoaderIcon = false) {
+            let content = '';
+            if (showLoaderIcon) {
+                content += '<div class="loader" style="margin-bottom:5px;"></div>';
+            }
+            content += message;
+            element.innerHTML = content;
+            element.className = `message-area ${type}`; // Also ensure loader-container class isn't messing up
+            if (type === 'loading') element.classList.add('loader-container'); // Re-add if needed
+            else element.classList.remove('loader-container');
             element.style.display = 'block';
         }
+
         function hideMessage(element) {
             element.style.display = 'none';
             element.innerHTML = '';
+            element.classList.remove('loader-container');
         }
-        function showLoader(containerElement) {
-            hideMessage(containerElement); // Hide any previous messages
-            containerElement.innerHTML = '<div class="loader"></div>';
-            containerElement.style.display = 'block';
-        }
-
+        
         // --- Supplier Fetching & Handling ---
         async function fetchSuppliers() {
-            if (!GAS_WEB_APP_URL) {
-                showMessage(appStatusDiv, "الرجاء إدخال رابط Google Apps Script Web App أولاً.", "error");
+            if (GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL) {
+                showMessage(appStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف في الكود. يرجى تحديث الكود.", "error");
+                mainAppContentDiv.style.display = 'none'; // Keep main content hidden
                 return false;
             }
-            showLoader(appStatusDiv);
+            
+            appStatusDiv.innerHTML = '<div class="loader"></div><p>جاري تحميل الموردين...</p>';
+            appStatusDiv.className = 'message-area loader-container';
+            appStatusDiv.style.display = 'block';
+            mainAppContentDiv.style.display = 'none';
+
+
             try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers'); // Added action for potential future routing in GAS
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers');
                 if (!response.ok) {
                     throw new Error(`خطأ في الشبكة: ${response.status} ${response.statusText}`);
                 }
@@ -297,14 +309,12 @@
                     throw new Error(`خطأ من السكريبت: ${data.error}`);
                 }
                 allSuppliersData = data.suppliers || [];
-                showMessage(appStatusDiv, `تم تحميل ${allSuppliersData.length} مورد بنجاح.`, 'success');
+                hideMessage(appStatusDiv);
                 mainAppContentDiv.style.display = 'block';
-                document.getElementById('configSection').style.display = 'none'; // Hide config after success
-                localStorage.setItem('gasWebAppUrl', GAS_WEB_APP_URL); // Save for next time
                 return true;
             } catch (error) {
                 console.error("Error fetching suppliers:", error);
-                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}. تأكد من صحة الرابط ومنشور بشكل صحيح.`, 'error');
+                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.<br>تأكد من صحة الرابط في الكود ومنشور بشكل صحيح.`, 'error');
                 mainAppContentDiv.style.display = 'none';
                 return false;
             }
@@ -319,7 +329,7 @@
                 (s.code && s.code.toLowerCase().includes(query.toLowerCase()))
             ).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
 
-            filtered.slice(0, 10).forEach(supplier => { // Show top 10 results
+            filtered.slice(0, 10).forEach(supplier => {
                 const item = document.createElement('div');
                 item.classList.add('supplier-item');
                 item.textContent = `${supplier.name} (${supplier.code})`;
@@ -341,7 +351,6 @@
         function removeSupplier(supplierCode) {
             selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
             renderSelectedSuppliers();
-            // If all suppliers removed, hide results if they were visible
             if (selectedSuppliers.length === 0) {
                 resultsContainerDiv.style.display = 'none';
                 generatedOutputForSaving = null;
@@ -368,7 +377,7 @@
                 });
                 const removeBtn = document.createElement('span');
                 removeBtn.classList.add('remove-supplier');
-                removeBtn.innerHTML = '&times;';
+                removeBtn.innerHTML = '×';
                 removeBtn.title = 'إزالة المورد';
                 removeBtn.addEventListener('click', () => removeSupplier(selItem.supplier.code));
                 itemDiv.appendChild(supplierInfo);
@@ -433,7 +442,8 @@
                 let supplierCodePart = selItem.supplier.code.toUpperCase();
                 if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
                 else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
-                else if (supplierCodePart.length < 2) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); // If very short code
+                else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); 
+                else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ"; // Default for empty code
 
                 const dateInitialsPart = monthInitial + dayInitial;
                 const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
@@ -453,7 +463,7 @@
 
             outputCodePre.textContent = textOutput;
             resultsContainerDiv.style.display = 'block';
-            hideMessage(userMessagesDiv); // Hide any previous validation errors
+            hideMessage(userMessagesDiv);
 
             generatedOutputForSaving = {
                 purchasingOfficer: purchasingOfficerInput.value,
@@ -477,7 +487,6 @@
             hideMessage(userMessagesDiv);
             hideMessage(saveStatusDiv);
             generatedOutputForSaving = null;
-            // Do not clear GAS_WEB_APP_URL or hide main content
         }
 
         async function copyCodesToClipboard() {
@@ -496,41 +505,32 @@
                 showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها. قم بتوليد الأكواد أولاً.", 'error');
                 return;
             }
-            if (!GAS_WEB_APP_URL) {
-                 showMessage(saveStatusDiv, "رابط Web App غير مُعد.", 'error');
+            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec' || !GAS_WEB_APP_URL) {
+                 showMessage(saveStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف في الكود.", 'error');
                 return;
             }
 
-            showLoader(saveStatusDiv);
+            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true); // Show loader in saveStatus
             saveToSheetBtn.disabled = true;
 
             try {
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'cors', // Required for cross-origin POST to GAS
+                    mode: 'cors',
                     cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json', // Changed to JSON for easier parsing in GAS
-                    },
-                    body: JSON.stringify(generatedOutputForSaving), // Send as JSON
-                    redirect: 'follow' // GAS doPost often redirects, follow it
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(generatedOutputForSaving),
+                    redirect: 'follow'
                 });
                 
-                // GAS doPost from 'Anyone' access often returns an HTML page on success (redirect)
-                // or JSON on error. We can't easily parse the HTML, so we check for ok status.
-                // A more robust way is to have GAS return specific JSON even for success without redirect.
-                // For now, we assume response.ok means it likely succeeded.
                 if (!response.ok) {
-                    // Try to get error from GAS if it sent JSON
                     try {
                         const errorData = await response.json();
                          throw new Error(errorData.message || `خطأ من السيرفر: ${response.status}`);
                     } catch (jsonError) {
-                        // If not JSON, use status text
                         throw new Error(`خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`);
                     }
                 }
-                // If response.ok, try to parse JSON response (GAS should return this for success)
                 const result = await response.json(); 
                 if (result.success) {
                     showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
@@ -546,17 +546,7 @@
             }
         }
 
-
         // --- Event Listeners ---
-        loadConfigAndSuppliersBtn.addEventListener('click', () => {
-            GAS_WEB_APP_URL = gasWebAppUrlInput.value.trim();
-            if (GAS_WEB_APP_URL) {
-                fetchSuppliers();
-            } else {
-                showMessage(appStatusDiv, "الرجاء إدخال رابط Google Apps Script Web App.", "error");
-            }
-        });
-
         supplierSearchInput.addEventListener('keyup', (e) => displaySearchResults(e.target.value));
         generateBtn.addEventListener('click', generateCodes);
         clearFormBtn.addEventListener('click', clearForm);
@@ -565,17 +555,8 @@
 
         // --- Initial Load ---
         function initializeApp() {
-            const savedUrl = localStorage.getItem('gasWebAppUrl');
-            if (savedUrl) {
-                gasWebAppUrlInput.value = savedUrl;
-                GAS_WEB_APP_URL = savedUrl;
-                fetchSuppliers(); // Auto-load if URL is saved
-            } else {
-                // Show config section for user to input URL
-                document.getElementById('configSection').style.display = 'block';
-                mainAppContentDiv.style.display = 'none';
-            }
             renderSelectedSuppliers(); // Initial render for selected list
+            fetchSuppliers(); // Directly fetch suppliers on load
         }
 
         initializeApp();
