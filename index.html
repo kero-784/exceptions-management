@@ -238,7 +238,7 @@
     <script>
         // --- Configuration ---
         // !!! IMPORTANT: Replace this with YOUR Google Apps Script Web App URL !!!
-        const GAS_WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec';
 
         // --- Global State ---
         let allSuppliersData = [];
@@ -287,7 +287,7 @@
         
         // --- Supplier Fetching & Handling ---
         async function fetchSuppliers() {
-            if (GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' || !GAS_WEB_APP_URL) {
+            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxZ4qc8-h5_E6SqtT3JUr6POwhZARWFljy-G_FVsdlvD1Wc_Zh8vx5dp6dBAbFhAmWqiw/exec' || !GAS_WEB_APP_URL) {
                 showMessage(appStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف في الكود. يرجى تحديث الكود.", "error");
                 mainAppContentDiv.style.display = 'none'; // Keep main content hidden
                 return false;
