@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد الأكواد المتقدم</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 0.3rem;
+        }
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            background-color: #e9ecef;
+            color: var(--dark-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .app-container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        .app-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 15px;
+        }
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        input[type="text"], input[type="date"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            outline: none;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.secondary { background-color: var(--secondary-color); }
+        button.secondary:hover { background-color: #545b62; }
+        button.success { background-color: var(--success-color); }
+        button.success:hover { background-color: #1e7e34; }
+
+        #supplierSearchResults {
+            border: 1px solid #ced4da;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+        }
+        .supplier-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        .supplier-item:last-child { border-bottom: none; }
+        .supplier-item:hover { background-color: var(--light-color); }
+
+        #selectedSuppliersList .selected-supplier-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: var(--light-color);
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+        }
+        .selected-supplier-item span:first-child { flex-grow: 1; }
+        .selected-supplier-item input[type="text"] {
+            width: 50%;
+            margin: 0 10px;
+        }
+        .remove-supplier {
+            color: var(--danger-color);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 0 8px;
+        }
+        #resultsContainer {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border: 1px solid #a7d7c5;
+            border-radius: var(--border-radius);
+        }
+        #resultsContainer pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+        }
+        .message-area {
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+        .message-area.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+        .message-area.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .message-area.info { background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;}
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1 class="app-header">مولد الأكواد المتقدم</h1>
+
+        <div id="configSection" class="form-section">
+            <label for="gasWebAppUrl">رابط Google Apps Script Web App:</label>
+            <input type="text" id="gasWebAppUrl" placeholder="الصق رابط Web App هنا">
+            <button id="loadConfigAndSuppliers" style="margin-top:10px;">تحميل الإعدادات والموردين</button>
+             <div id="appStatus" class="message-area" style="display:none;"></div>
+        </div>
+
+
+        <div id="mainAppContent" style="display:none;">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="supplierSearch">بحث عن مورد (بالاسم أو الكود):</label>
+                    <input type="text" id="supplierSearch" placeholder="ادخل اسم المورد أو كوده">
+                    <div id="supplierSearchResults"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>الموردون المختارون:</label>
+                    <div id="selectedSuppliersList">
+                        <p>لم يتم اختيار موردين بعد.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="entryDate">التاريخ:</label>
+                    <input type="date" id="entryDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="length">الطول (Length):</label>
+                    <input type="number" id="length" placeholder="مثال: 30" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="purchasingOfficer">مسؤول المشتريات:</label>
+                    <input type="text" id="purchasingOfficer" placeholder="ادخل اسم مسؤول المشتريات" required>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="generateBtn">توليد الكود</button>
+                <button id="clearFormBtn" class="secondary">مسح الكل</button>
+            </div>
+            <div id="userMessages" class="message-area" style="display:none;"></div>
+
+            <div id="resultsContainer" style="display:none;">
+                <h2>الأكواد المولدة:</h2>
+                <pre id="outputCode"></pre>
+                <div class="button-group">
+                     <button id="copyCodesBtn" class="secondary">نسخ الأكواد</button>
+                     <button id="saveToSheetBtn" class="success">حفظ إلى Google Sheet</button>
+                </div>
+                <div id="saveStatus" class="message-area" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        let GAS_WEB_APP_URL = ''; // Will be set by user input
+
+        // --- Global State ---
+        let allSuppliersData = [];
+        let selectedSuppliers = []; // Array to store { supplier: {name, code}, exception: "" }
+        let generatedOutputForSaving = null; // To store data for saving to sheet
+
+        // --- DOM Elements ---
+        const gasWebAppUrlInput = document.getElementById('gasWebAppUrl');
+        const loadConfigAndSuppliersBtn = document.getElementById('loadConfigAndSuppliers');
+        const appStatusDiv = document.getElementById('appStatus');
+        const mainAppContentDiv = document.getElementById('mainAppContent');
+
+        const supplierSearchInput = document.getElementById('supplierSearch');
+        const supplierSearchResultsDiv = document.getElementById('supplierSearchResults');
+        const selectedSuppliersListDiv = document.getElementById('selectedSuppliersList');
+        const entryDateInput = document.getElementById('entryDate');
+        const lengthInput = document.getElementById('length');
+        const purchasingOfficerInput = document.getElementById('purchasingOfficer');
+        const generateBtn = document.getElementById('generateBtn');
+        const clearFormBtn = document.getElementById('clearFormBtn');
+        const userMessagesDiv = document.getElementById('userMessages');
+        
+        const resultsContainerDiv = document.getElementById('resultsContainer');
+        const outputCodePre = document.getElementById('outputCode');
+        const copyCodesBtn = document.getElementById('copyCodesBtn');
+        const saveToSheetBtn = document.getElementById('saveToSheetBtn');
+        const saveStatusDiv = document.getElementById('saveStatus');
+
+        // --- Utility Functions ---
+        function showMessage(element, message, type = 'error') {
+            element.innerHTML = message;
+            element.className = `message-area ${type}`;
+            element.style.display = 'block';
+        }
+        function hideMessage(element) {
+            element.style.display = 'none';
+            element.innerHTML = '';
+        }
+        function showLoader(containerElement) {
+            hideMessage(containerElement); // Hide any previous messages
+            containerElement.innerHTML = '<div class="loader"></div>';
+            containerElement.style.display = 'block';
+        }
+
+        // --- Supplier Fetching & Handling ---
+        async function fetchSuppliers() {
+            if (!GAS_WEB_APP_URL) {
+                showMessage(appStatusDiv, "الرجاء إدخال رابط Google Apps Script Web App أولاً.", "error");
+                return false;
+            }
+            showLoader(appStatusDiv);
+            try {
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers'); // Added action for potential future routing in GAS
+                if (!response.ok) {
+                    throw new Error(`خطأ في الشبكة: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(`خطأ من السكريبت: ${data.error}`);
+                }
+                allSuppliersData = data.suppliers || [];
+                showMessage(appStatusDiv, `تم تحميل ${allSuppliersData.length} مورد بنجاح.`, 'success');
+                mainAppContentDiv.style.display = 'block';
+                document.getElementById('configSection').style.display = 'none'; // Hide config after success
+                localStorage.setItem('gasWebAppUrl', GAS_WEB_APP_URL); // Save for next time
+                return true;
+            } catch (error) {
+                console.error("Error fetching suppliers:", error);
+                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}. تأكد من صحة الرابط ومنشور بشكل صحيح.`, 'error');
+                mainAppContentDiv.style.display = 'none';
+                return false;
+            }
+        }
+
+        function displaySearchResults(query) {
+            supplierSearchResultsDiv.innerHTML = '';
+            if (!query) return;
+
+            const filtered = allSuppliersData.filter(s =>
+                (s.name && s.name.toLowerCase().includes(query.toLowerCase())) ||
+                (s.code && s.code.toLowerCase().includes(query.toLowerCase()))
+            ).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
+
+            filtered.slice(0, 10).forEach(supplier => { // Show top 10 results
+                const item = document.createElement('div');
+                item.classList.add('supplier-item');
+                item.textContent = `${supplier.name} (${supplier.code})`;
+                item.dataset.code = supplier.code;
+                item.addEventListener('click', () => selectSupplier(supplier));
+                supplierSearchResultsDiv.appendChild(item);
+            });
+        }
+
+        function selectSupplier(supplier) {
+            if (!selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) {
+                selectedSuppliers.push({ supplier: supplier, exception: "" });
+                supplierSearchInput.value = '';
+                supplierSearchResultsDiv.innerHTML = '';
+                renderSelectedSuppliers();
+            }
+        }
+
+        function removeSupplier(supplierCode) {
+            selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
+            renderSelectedSuppliers();
+            // If all suppliers removed, hide results if they were visible
+            if (selectedSuppliers.length === 0) {
+                resultsContainerDiv.style.display = 'none';
+                generatedOutputForSaving = null;
+            }
+        }
+
+        function renderSelectedSuppliers() {
+            selectedSuppliersListDiv.innerHTML = '';
+            if (selectedSuppliers.length === 0) {
+                selectedSuppliersListDiv.innerHTML = '<p>لم يتم اختيار موردين بعد.</p>';
+                return;
+            }
+            selectedSuppliers.forEach((selItem) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('selected-supplier-item');
+                const supplierInfo = document.createElement('span');
+                supplierInfo.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`;
+                const exceptionInput = document.createElement('input');
+                exceptionInput.type = 'text';
+                exceptionInput.placeholder = 'أدخل الاستثناء هنا';
+                exceptionInput.value = selItem.exception;
+                exceptionInput.addEventListener('input', (e) => {
+                    selItem.exception = e.target.value;
+                });
+                const removeBtn = document.createElement('span');
+                removeBtn.classList.add('remove-supplier');
+                removeBtn.innerHTML = '&times;';
+                removeBtn.title = 'إزالة المورد';
+                removeBtn.addEventListener('click', () => removeSupplier(selItem.supplier.code));
+                itemDiv.appendChild(supplierInfo);
+                itemDiv.appendChild(exceptionInput);
+                itemDiv.appendChild(removeBtn);
+                selectedSuppliersListDiv.appendChild(itemDiv);
+            });
+        }
+
+        // --- Code Generation ---
+        function validateInputs() {
+            hideMessage(userMessagesDiv);
+            let errors = [];
+            if (selectedSuppliers.length === 0) errors.push("الرجاء اختيار مورد واحد على الأقل.");
+            if (!entryDateInput.value) errors.push("الرجاء إدخال التاريخ.");
+            if (!lengthInput.value || isNaN(parseFloat(lengthInput.value))) errors.push("الرجاء إدخال قيمة رقمية للطول.");
+            if (!purchasingOfficerInput.value.trim()) errors.push("الرجاء إدخال اسم مسؤول المشتريات.");
+            selectedSuppliers.forEach((sel) => {
+                if (!sel.exception.trim()) errors.push(`الرجاء إدخال الاستثناء للمورد: ${sel.supplier.name}.`);
+            });
+
+            if (errors.length > 0) {
+                showMessage(userMessagesDiv, errors.join('<br>'), 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function getKDMNumberPart(index) {
+            const number = index % 11;
+            return String(number).padStart(2, '0');
+        }
+
+        function generateCodes() {
+            if (!validateInputs()) {
+                resultsContainerDiv.style.display = 'none';
+                generatedOutputForSaving = null;
+                return;
+            }
+
+            const dateValue = entryDateInput.value; // YYYY-MM-DD
+            const dateObj = new Date(dateValue);
+            const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
+            const localDate = new Date(dateObj.getTime() + userTimezoneOffset);
+
+            const monthName = localDate.toLocaleString('en-US', { month: 'long' });
+            const dayName = localDate.toLocaleString('en-US', { weekday: 'long' });
+            const monthInitial = monthName.charAt(0).toUpperCase();
+            const dayInitial = dayName.charAt(0).toUpperCase();
+
+            let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value}\n`;
+            let entryDateFormatted = localDate.toLocaleDateString('en-GB'); // DD/MM/YYYY
+            textOutput += `التاريخ: ${entryDateFormatted}\n`;
+            textOutput += `الطول: ${lengthInput.value}\n\n`;
+            textOutput += `الأكواد:\n`;
+            textOutput += "------------------------------------\n";
+
+            let itemsToSave = [];
+
+            selectedSuppliers.forEach((selItem, index) => {
+                const kdmPart = "KDM" + getKDMNumberPart(index);
+                let supplierCodePart = selItem.supplier.code.toUpperCase();
+                if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
+                else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
+                else if (supplierCodePart.length < 2) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); // If very short code
+
+                const dateInitialsPart = monthInitial + dayInitial;
+                const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
+
+                textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
+                textOutput += `الاستثناء: ${selItem.exception}\n`;
+                textOutput += `الكود: ${finalCode}\n`;
+                textOutput += "------------------------------------\n";
+
+                itemsToSave.push({
+                    supplierName: selItem.supplier.name,
+                    supplierCode: selItem.supplier.code,
+                    exception: selItem.exception,
+                    generatedCode: finalCode
+                });
+            });
+
+            outputCodePre.textContent = textOutput;
+            resultsContainerDiv.style.display = 'block';
+            hideMessage(userMessagesDiv); // Hide any previous validation errors
+
+            generatedOutputForSaving = {
+                purchasingOfficer: purchasingOfficerInput.value,
+                entryDate: entryDateFormatted,
+                length: lengthInput.value,
+                generatedItems: itemsToSave
+            };
+        }
+        
+        // --- Actions ---
+        function clearForm() {
+            supplierSearchInput.value = '';
+            supplierSearchResultsDiv.innerHTML = '';
+            selectedSuppliers = [];
+            renderSelectedSuppliers();
+            entryDateInput.value = '';
+            lengthInput.value = '';
+            purchasingOfficerInput.value = '';
+            resultsContainerDiv.style.display = 'none';
+            outputCodePre.textContent = '';
+            hideMessage(userMessagesDiv);
+            hideMessage(saveStatusDiv);
+            generatedOutputForSaving = null;
+            // Do not clear GAS_WEB_APP_URL or hide main content
+        }
+
+        async function copyCodesToClipboard() {
+            if (!outputCodePre.textContent) return;
+            try {
+                await navigator.clipboard.writeText(outputCodePre.textContent);
+                showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success');
+            } catch (err) {
+                showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error');
+                console.error('Failed to copy: ', err);
+            }
+        }
+
+        async function saveCodesToSheet() {
+            if (!generatedOutputForSaving) {
+                showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها. قم بتوليد الأكواد أولاً.", 'error');
+                return;
+            }
+            if (!GAS_WEB_APP_URL) {
+                 showMessage(saveStatusDiv, "رابط Web App غير مُعد.", 'error');
+                return;
+            }
+
+            showLoader(saveStatusDiv);
+            saveToSheetBtn.disabled = true;
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors', // Required for cross-origin POST to GAS
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json', // Changed to JSON for easier parsing in GAS
+                    },
+                    body: JSON.stringify(generatedOutputForSaving), // Send as JSON
+                    redirect: 'follow' // GAS doPost often redirects, follow it
+                });
+                
+                // GAS doPost from 'Anyone' access often returns an HTML page on success (redirect)
+                // or JSON on error. We can't easily parse the HTML, so we check for ok status.
+                // A more robust way is to have GAS return specific JSON even for success without redirect.
+                // For now, we assume response.ok means it likely succeeded.
+                if (!response.ok) {
+                    // Try to get error from GAS if it sent JSON
+                    try {
+                        const errorData = await response.json();
+                         throw new Error(errorData.message || `خطأ من السيرفر: ${response.status}`);
+                    } catch (jsonError) {
+                        // If not JSON, use status text
+                        throw new Error(`خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`);
+                    }
+                }
+                // If response.ok, try to parse JSON response (GAS should return this for success)
+                const result = await response.json(); 
+                if (result.success) {
+                    showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
+                } else {
+                    throw new Error(result.message || 'فشل حفظ الأكواد، رد غير معروف من السيرفر.');
+                }
+
+            } catch (error) {
+                console.error("Error saving to sheet:", error);
+                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}`, 'error');
+            } finally {
+                saveToSheetBtn.disabled = false;
+            }
+        }
+
+
+        // --- Event Listeners ---
+        loadConfigAndSuppliersBtn.addEventListener('click', () => {
+            GAS_WEB_APP_URL = gasWebAppUrlInput.value.trim();
+            if (GAS_WEB_APP_URL) {
+                fetchSuppliers();
+            } else {
+                showMessage(appStatusDiv, "الرجاء إدخال رابط Google Apps Script Web App.", "error");
+            }
+        });
+
+        supplierSearchInput.addEventListener('keyup', (e) => displaySearchResults(e.target.value));
+        generateBtn.addEventListener('click', generateCodes);
+        clearFormBtn.addEventListener('click', clearForm);
+        copyCodesBtn.addEventListener('click', copyCodesToClipboard);
+        saveToSheetBtn.addEventListener('click', saveCodesToSheet);
+
+        // --- Initial Load ---
+        function initializeApp() {
+            const savedUrl = localStorage.getItem('gasWebAppUrl');
+            if (savedUrl) {
+                gasWebAppUrlInput.value = savedUrl;
+                GAS_WEB_APP_URL = savedUrl;
+                fetchSuppliers(); // Auto-load if URL is saved
+            } else {
+                // Show config section for user to input URL
+                document.getElementById('configSection').style.display = 'block';
+                mainAppContentDiv.style.display = 'none';
+            }
+            renderSelectedSuppliers(); // Initial render for selected list
+        }
+
+        initializeApp();
+
+    </script>
+</body>
+</html>
