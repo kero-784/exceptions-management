@@ -279,14 +279,24 @@
 
     <script>
         // --- Configuration ---
-        // !!! ONLY PLACE TO REPLACE: YOUR ACTUAL DEPLOYED WEB APP URL !!!
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec; 
-        // --- This is a generic placeholder string, DO NOT CHANGE THIS LINE ---
+        // !!! ENSURE THIS IS YOUR ACTUAL DEPLOYED WEB APP URL !!!
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec';
+        // --- This string is used to check if the URL above was accidentally left as a placeholder ---
         const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; 
 
         console.log("App Initializing. GAS URL being used:", GAS_WEB_APP_URL);
-        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) { // Check if the actual URL is still the generic placeholder
-            console.error("CRITICAL: GAS_WEB_APP_URL has not been updated from its template placeholder value.");
+        // This check ensures you've replaced any generic placeholder in GAS_WEB_APP_URL
+        // with your actual deployed script URL.
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) { 
+            console.error("CRITICAL: GAS_WEB_APP_URL has not been updated from its template placeholder value. Please set it to your deployed Google Apps Script URL.");
+            // Display error to user if the placeholder is still there
+            const appStatusDivImmediate = document.getElementById('appStatus');
+            if(appStatusDivImmediate) {
+                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script بشكل صحيح. يرجى الاتصال بمسؤول النظام.</p>`;
+                appStatusDivImmediate.style.display = 'block';
+                appStatusDivImmediate.className = 'message-area error';
+            }
+            document.getElementById('mainAppContent').style.display = 'none';
         }
 
 
@@ -336,7 +346,8 @@
         // --- Supplier Fetching & Handling (using fetch) ---
         async function fetchSuppliers() {
             console.log("Attempting to fetch suppliers...");
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) { // Second check in case URL_PLACEHOLDER_STRING was accidentally put in GAS_WEB_APP_URL
+            // This check is now primary, the one at the top is an immediate visual cue if config is wrong.
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) { 
                 const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود بالرابط الذي تم نشره.";
                 showMessage(appStatusDiv, errorMsg, "error");
                 console.error("fetchSuppliers Error: URL not set correctly. Current URL:", GAS_WEB_APP_URL);
@@ -594,22 +605,29 @@
                 generatedOutputForSaving = null;
                 return;
             }
-            const dateValue = entryDateInput.value;
-            const dateObj = new Date(dateValue);
-            const userTimezoneOffset = dateObj.getTimezoneOffset() * 60000;
-            const localDate = new Date(dateObj.getTime() + userTimezoneOffset);
+            const dateValue = entryDateInput.value; // e.g., "2023-10-26"
+
+            const dateParts = dateValue.split('-'); // "YYYY-MM-DD"
+            const year = parseInt(dateParts[0], 10);
+            const monthJs = parseInt(dateParts[1], 10) - 1; // JavaScript months are 0-indexed
+            const day = parseInt(dateParts[2], 10);
+            const localDate = new Date(year, monthJs, day); // Creates date at local midnight
+
             const monthName = localDate.toLocaleString('en-US', { month: 'long' });
             const dayName = localDate.toLocaleString('en-US', { weekday: 'long' });
             const monthInitial = monthName.charAt(0).toUpperCase();
             const dayInitial = dayName.charAt(0).toUpperCase();
+            
             let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value}\n`;
-            let entryDateFormatted = localDate.toLocaleDateString('en-GB');
+            let entryDateFormatted = localDate.toLocaleDateString('en-GB'); // DD/MM/YYYY
             textOutput += `التاريخ: ${entryDateFormatted}\n`;
             textOutput += `الطول: ${lengthInput.value}\n\n`;
             textOutput += `الأكواد:\n`;
             textOutput += "------------------------------------\n";
+            
             let itemsToSave = [];
             let kdmGlobalIndex = 0;
+            
             selectedSuppliers.forEach((selItem) => {
                 selItem.exceptions.forEach((exceptionText) => {
                     if (!exceptionText.trim()) return; 
@@ -619,12 +637,15 @@
                     else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
                     else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); 
                     else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ"; 
+                    
                     const dateInitialsPart = monthInitial + dayInitial;
                     const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
+                    
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
                     textOutput += `الاستثناء: ${exceptionText}\n`;
                     textOutput += `الكود: ${finalCode}\n`;
                     textOutput += "------------------------------------\n";
+                    
                     itemsToSave.push({
                         supplierName: selItem.supplier.name,
                         supplierCode: selItem.supplier.code,
@@ -634,15 +655,18 @@
                     kdmGlobalIndex++;
                 });
             });
+            
             if (itemsToSave.length === 0) {
                  showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning');
                  resultsContainerDiv.style.display = 'none';
                  generatedOutputForSaving = null;
                  return;
             }
+            
             outputCodePre.textContent = textOutput;
             resultsContainerDiv.style.display = 'block';
             hideMessage(userMessagesDiv);
+            
             generatedOutputForSaving = {
                 purchasingOfficer: purchasingOfficerInput.value,
                 entryDate: entryDateFormatted,
@@ -689,7 +713,6 @@
         // --- Save Codes to Sheet (using fetch) ---
         async function saveCodesToSheet() {
             console.log("Attempting to save codes to sheet...");
-            // Check if GAS_WEB_APP_URL is still the generic placeholder string
             if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
                 const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود. يرجى تحديث `GAS_WEB_APP_URL`.";
                 showMessage(saveStatusDiv, errorMsg, 'error');
@@ -775,12 +798,23 @@
         // --- Initial Load ---
         function initializeApp() {
             console.log("initializeApp called.");
+            // Check if GAS URL is properly set before proceeding
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) {
+                // The message is already shown by the top-level check.
+                // We might want to prevent further execution or not, depending on desired behavior.
+                // For now, it will try to run fetchSuppliers which will also fail.
+                console.error("Initialization halted: GAS_WEB_APP_URL is still a placeholder.");
+                return; 
+            }
             entryDateInput.valueAsDate = new Date();
             renderSelectedSuppliers(); 
             fetchSuppliers(); 
         }
 
-        initializeApp();
+        // Run initial app setup only if the main content area is not hidden by a critical error message
+        if (document.getElementById('mainAppContent').style.display !== 'none') {
+            initializeApp();
+        }
 
     </script>
 </body>
