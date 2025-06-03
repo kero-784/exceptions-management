@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد الأكواد المتقدم (مستضاف خارجيًا)</title>
+    <title>مولد الأكواد المتقدم (مستضاف خارجيًا V2.3)</title>
     <style>
         :root {
             --primary-color: #007bff;
@@ -280,9 +280,15 @@
     <script>
         // --- Configuration ---
         // !!! REPLACE WITH YOUR ACTUAL DEPLOYED WEB APP URL !!!
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec';
-        // This is just a placeholder to check if the above URL has been changed
-        const URL_PLACEHOLDER_CHECK = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec';
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec'; // YOUR ACTUAL URL
+
+        // --- THIS SHOULD BE A GENERIC PLACEHOLDER DIFFERENT FROM YOUR ACTUAL URL ---
+        const URL_PLACEHOLDER_CHECK = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec'; // Generic Placeholder
+
+        console.log("App Initializing. GAS URL:", GAS_WEB_APP_URL);
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_CHECK) {
+            console.error("CRITICAL: GAS_WEB_APP_URL has not been updated from the placeholder.");
+        }
 
 
         // --- Global State ---
@@ -321,6 +327,7 @@
             element.innerHTML = content;
             element.className = `message-area ${type}`;
             element.style.display = 'block';
+            console.log(`UI Message (${type}):`, message);
         }
         function hideMessage(element) {
             element.style.display = 'none';
@@ -329,8 +336,11 @@
         
         // --- Supplier Fetching & Handling (using fetch) ---
         async function fetchSuppliers() {
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_CHECK || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
-                showMessage(appStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود بالرابط الذي تم نشره.", "error");
+            console.log("Attempting to fetch suppliers...");
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_CHECK || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_GAS_URL_PLACEHOLDER_HERE_REPLACE_ME") || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
+                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود بالرابط الذي تم نشره.";
+                showMessage(appStatusDiv, errorMsg, "error");
+                console.error("fetchSuppliers Error:", errorMsg, "Current URL:", GAS_WEB_APP_URL);
                 mainAppContentDiv.style.display = 'none';
                 return false;
             }
@@ -339,25 +349,35 @@
             mainAppContentDiv.style.display = 'none';
 
             try {
+                console.log("Fetching from URL:", GAS_WEB_APP_URL + '?action=getSuppliers');
                 const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers', {
-                    method: 'GET', // GET request to fetch suppliers
-                    mode: 'cors', // Necessary for cross-origin requests
+                    method: 'GET',
+                    mode: 'cors', 
                 });
+                console.log("Fetch response status:", response.status, "Ok:", response.ok);
 
                 if (!response.ok) {
                     let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
+                    let responseBodyText = await response.text(); // Get raw text for debugging
+                    console.error("Fetch !response.ok. Raw response text:", responseBodyText);
                     try {
-                        const errData = await response.json(); // Try to parse error from GAS
+                        const errData = JSON.parse(responseBodyText); // Try to parse error from GAS
                         if(errData && (errData.error || errData.message) ) errorText = errData.error || errData.message;
-                    } catch(e){ /* Ignore if error response isn't JSON */ }
+                    } catch(e){ 
+                        console.warn("Could not parse error response as JSON. Raw text:", responseBodyText);
+                    }
                     throw new Error(errorText);
                 }
                 const data = await response.json();
+                console.log("Received data from GAS for suppliers:", data);
+
                 if (data.error) { // Custom error from GAS
                     throw new Error(`${data.error}`);
                 }
                 
                 allSuppliersData = data.suppliers || [];
+                console.log("Processed suppliers data:", allSuppliersData);
+
                 if(allSuppliersData.length === 0) {
                      showMessage(initialUserMessagesDiv, "لم يتم العثور على بيانات موردين. تأكد من أن Google Sheet 'Suppliers' يحتوي على بيانات وأن الرابط صحيح.", "warning");
                 } else {
@@ -365,10 +385,11 @@
                 }
                 hideMessage(appStatusDiv);
                 mainAppContentDiv.style.display = 'block';
+                console.log("Suppliers fetched and processed successfully.");
                 return true;
             } catch (error) {
-                console.error("Error fetching suppliers:", error);
-                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.<br>تأكد من صحة الرابط ومنشور بصلاحية "Anyone" ومتاح للطلبات الخارجية (CORS).`, 'error');
+                console.error("Error in fetchSuppliers:", error.message, error);
+                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.<br>تأكد من صحة الرابط ومنشور بصلاحية "Anyone" ومتاح للطلبات الخارجية (CORS). تحقق من وحدة التحكم (Console) لمزيد من التفاصيل.`, 'error');
                 mainAppContentDiv.style.display = 'none';
                 return false;
             }
@@ -427,6 +448,7 @@
                     return;
                 }
                 selectedSuppliers.push({ supplier: supplier, exceptions: [""] });
+                console.log("Added supplier:", supplier, "Current selectedSuppliers:", selectedSuppliers);
                 supplierCodeInput.value = '';
                 supplierCodeSuggestionsDiv.innerHTML = '';
                 supplierCodeSuggestionsDiv.style.display = 'none';
@@ -438,7 +460,9 @@
         }
         
         function removeSelectedSupplier(supplierCode) {
+            console.log("Attempting to remove supplier with code:", supplierCode);
             selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
+            console.log("selectedSuppliers after removal:", selectedSuppliers);
             renderSelectedSuppliers();
             if (selectedSuppliers.length === 0) {
                 resultsContainerDiv.style.display = 'none';
@@ -450,6 +474,7 @@
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
             if (supplierItem) {
                 supplierItem.exceptions.push("");
+                console.log("Added exception to supplier:", supplierCode, "New exceptions list:", supplierItem.exceptions);
                 renderSelectedSuppliers();
                 const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${supplierCode}"]`);
                 if(card) {
@@ -463,6 +488,7 @@
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
             if (supplierItem && supplierItem.exceptions.length > 1) {
                 supplierItem.exceptions.splice(exceptionIndex, 1);
+                console.log("Removed exception at index", exceptionIndex, "from supplier:", supplierCode, "New exceptions list:", supplierItem.exceptions);
                 renderSelectedSuppliers();
             }
         }
@@ -471,10 +497,12 @@
              const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
              if (supplierItem) {
                 supplierItem.exceptions[exceptionIndex] = value;
+                // console.log("Updated exception for supplier:", supplierCode, "at index:", exceptionIndex, "to:", value); // Can be very noisy
              }
         }
 
         function renderSelectedSuppliers() {
+            // console.log("Rendering selected suppliers. Count:", selectedSuppliers.length);
             selectedSuppliersListDiv.innerHTML = '';
             if (selectedSuppliers.length === 0) {
                 selectedSuppliersListDiv.innerHTML = '<p>لم يتم اختيار موردين بعد.</p>';
@@ -535,6 +563,7 @@
         }
 
         function validateInputs() {
+            console.log("Validating inputs...");
             hideMessage(userMessagesDiv);
             let errors = [];
             if (selectedSuppliers.length === 0) errors.push("الرجاء اختيار مورد واحد على الأقل.");
@@ -548,9 +577,11 @@
                 }
             });
             if (errors.length > 0) {
+                console.warn("Validation failed:", errors);
                 showMessage(userMessagesDiv, errors.join('<br>'), 'error');
                 return false;
             }
+            console.log("Inputs validated successfully.");
             return true;
         }
 
@@ -560,6 +591,7 @@
         }
 
         function generateCodes() {
+            console.log("Attempting to generate codes...");
             if (!validateInputs()) {
                 resultsContainerDiv.style.display = 'none';
                 generatedOutputForSaving = null;
@@ -620,9 +652,11 @@
                 length: lengthInput.value,
                 generatedItems: itemsToSave
             };
+            console.log("Codes generated successfully. Output for saving:", generatedOutputForSaving);
         }
         
         function clearForm() {
+            console.log("Clearing form...");
             supplierCodeInput.value = '';
             supplierCodeSuggestionsDiv.innerHTML = '';
             supplierCodeSuggestionsDiv.style.display = 'none';
@@ -637,26 +671,36 @@
             hideMessage(userMessagesDiv);
             hideMessage(saveStatusDiv);
             generatedOutputForSaving = null;
+            console.log("Form cleared.");
         }
 
         async function copyCodesToClipboard() {
-            if (!outputCodePre.textContent) return;
+            if (!outputCodePre.textContent) {
+                console.warn("No codes to copy.");
+                return;
+            }
             try {
                 await navigator.clipboard.writeText(outputCodePre.textContent);
                 showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success');
+                console.log("Codes copied to clipboard.");
             } catch (err) {
                 showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error');
+                console.error("Failed to copy codes:", err);
             }
         }
 
-        // --- Save Codes to Sheet (MODIFIED TO USE FETCH) ---
+        // --- Save Codes to Sheet (using fetch) ---
         async function saveCodesToSheet() {
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_CHECK || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
-                showMessage(saveStatusDiv, "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود.", 'error');
+            console.log("Attempting to save codes to sheet...");
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_CHECK || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_GAS_URL_PLACEHOLDER_HERE_REPLACE_ME") || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
+                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود.";
+                showMessage(saveStatusDiv, errorMsg, 'error');
+                console.error("saveCodesToSheet Error:", errorMsg, "Current URL:", GAS_WEB_APP_URL);
                 return;
             }
             if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) {
                 showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها. قم بتوليد الأكواد أولاً.", 'warning');
+                console.warn("No codes generated to save.");
                 return;
             }
 
@@ -664,39 +708,44 @@
             saveToSheetBtn.disabled = true;
 
             try {
+                console.log("Saving to URL:", GAS_WEB_APP_URL, "Payload:", generatedOutputForSaving);
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'cors', // Necessary for cross-origin requests
+                    mode: 'cors', 
                     cache: 'no-cache',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json', // Make sure GAS doPost expects this
                     },
                     body: JSON.stringify(generatedOutputForSaving),
-                    // For Apps Script, if doPost returns JSON, redirect: 'follow' might not be needed
-                    // or could even cause issues if the response isn't a true redirect.
-                    // Apps Script doPost typically returns a ContentService output.
                 });
+                console.log("Save response status:", response.status, "Ok:", response.ok);
 
                 if (!response.ok) {
                      let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
+                     let responseBodyText = await response.text(); // Get raw text for debugging
+                     console.error("Save !response.ok. Raw response text:", responseBodyText);
                     try {
-                        const errData = await response.json();
+                        const errData = JSON.parse(responseBodyText);
                         if(errData && (errData.message || errData.error)) errorText = errData.message || errData.error;
-                    } catch(e){}
+                    } catch(e){
+                        console.warn("Could not parse error response from save as JSON. Raw text:", responseBodyText);
+                    }
                     throw new Error(errorText);
                 }
                 
-                const result = await response.json(); // Expecting JSON back from GAS doPost
+                const result = await response.json();
+                console.log("Received data from GAS for save operation:", result);
                 
                 if (result.success) {
                     showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
+                    console.log("Codes saved successfully to sheet.");
                 } else {
                     throw new Error(result.message || 'فشل حفظ الأكواد، رد غير معروف من السيرفر.');
                 }
 
             } catch (error) {
-                console.error("Error saving to sheet:", error);
-                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}`, 'error');
+                console.error("Error in saveCodesToSheet:", error.message, error);
+                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}. تحقق من وحدة التحكم (Console) لمزيد من التفاصيل.`, 'error');
             } finally {
                 saveToSheetBtn.disabled = false;
             }
@@ -727,6 +776,7 @@
 
         // --- Initial Load ---
         function initializeApp() {
+            console.log("initializeApp called.");
             entryDateInput.valueAsDate = new Date();
             renderSelectedSuppliers(); 
             fetchSuppliers(); 
