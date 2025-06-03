@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد الأكواد المتقدم (مستضاف خارجيًا V2.3)</title>
+    <title>مولد الأكواد المتقدم (مستضاف خارجيًا V2.4)</title>
     <style>
         :root {
             --primary-color: #007bff;
@@ -279,15 +279,15 @@
 
     <script>
         // --- Configuration ---
-        // !!! REPLACE WITH YOUR ACTUAL DEPLOYED WEB APP URL !!!
-        const  = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec'; // YOUR ACTUAL URL
+        // !!! ONLY PLACE TO REPLACE: YOUR ACTUAL DEPLOYED WEB APP URL !!!
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec; // YOUR ACTUAL URL
 
-        // --- THIS SHOULD BE A GENERIC PLACEHOLDER DIFFERENT FROM YOUR ACTUAL URL ---
-        const URL_PLACEHOLDER_CHECK = 'https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec'; // Generic Placeholder
+        // --- This is a generic placeholder string, DO NOT CHANGE THIS LINE ---
+        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; 
 
-        console.log("App Initializing. GAS URL:", );
-        if ( === URL_PLACEHOLDER_CHECK) {
-            console.error("CRITICAL:  has not been updated from the placeholder.");
+        console.log("App Initializing. GAS URL being used:", GAS_WEB_APP_URL);
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) { // Check if the actual URL is still the generic placeholder
+            console.error("CRITICAL: GAS_WEB_APP_URL has not been updated from its template placeholder value.");
         }
 
 
@@ -337,10 +337,10 @@
         // --- Supplier Fetching & Handling (using fetch) ---
         async function fetchSuppliers() {
             console.log("Attempting to fetch suppliers...");
-            if ( === URL_PLACEHOLDER_CHECK || !.trim() || .includes("https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec") || .includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
-                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `` في الكود بالرابط الذي تم نشره.";
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) { // Second check in case URL_PLACEHOLDER_STRING was accidentally put in GAS_WEB_APP_URL
+                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود بالرابط الذي تم نشره.";
                 showMessage(appStatusDiv, errorMsg, "error");
-                console.error("fetchSuppliers Error:", errorMsg, "Current URL:", );
+                console.error("fetchSuppliers Error: URL not set correctly. Current URL:", GAS_WEB_APP_URL);
                 mainAppContentDiv.style.display = 'none';
                 return false;
             }
@@ -349,8 +349,8 @@
             mainAppContentDiv.style.display = 'none';
 
             try {
-                console.log("Fetching from URL:",  + '?action=getSuppliers');
-                const response = await fetch( + '?action=getSuppliers', {
+                console.log("Fetching from URL:", GAS_WEB_APP_URL + '?action=getSuppliers');
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers', {
                     method: 'GET',
                     mode: 'cors', 
                 });
@@ -358,10 +358,10 @@
 
                 if (!response.ok) {
                     let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                    let responseBodyText = await response.text(); // Get raw text for debugging
+                    let responseBodyText = await response.text(); 
                     console.error("Fetch !response.ok. Raw response text:", responseBodyText);
                     try {
-                        const errData = JSON.parse(responseBodyText); // Try to parse error from GAS
+                        const errData = JSON.parse(responseBodyText); 
                         if(errData && (errData.error || errData.message) ) errorText = errData.error || errData.message;
                     } catch(e){ 
                         console.warn("Could not parse error response as JSON. Raw text:", responseBodyText);
@@ -371,7 +371,7 @@
                 const data = await response.json();
                 console.log("Received data from GAS for suppliers:", data);
 
-                if (data.error) { // Custom error from GAS
+                if (data.error) { 
                     throw new Error(`${data.error}`);
                 }
                 
@@ -497,12 +497,10 @@
              const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
              if (supplierItem) {
                 supplierItem.exceptions[exceptionIndex] = value;
-                // console.log("Updated exception for supplier:", supplierCode, "at index:", exceptionIndex, "to:", value); // Can be very noisy
              }
         }
 
         function renderSelectedSuppliers() {
-            // console.log("Rendering selected suppliers. Count:", selectedSuppliers.length);
             selectedSuppliersListDiv.innerHTML = '';
             if (selectedSuppliers.length === 0) {
                 selectedSuppliersListDiv.innerHTML = '<p>لم يتم اختيار موردين بعد.</p>';
@@ -692,10 +690,11 @@
         // --- Save Codes to Sheet (using fetch) ---
         async function saveCodesToSheet() {
             console.log("Attempting to save codes to sheet...");
-            if ( === URL_PLACEHOLDER_CHECK || !.trim() || .includes("https://script.google.com/macros/s/AKfycby0INkaM9h0fVvDHuBgk9-YxMrO9GxNIV3kLzu_si45r240Jtlcm6yZvQ_i-gFmvRvBhQ/exec") || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
-                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود.";
+            // Check if GAS_WEB_APP_URL is still the generic placeholder string
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
+                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود. يرجى تحديث `GAS_WEB_APP_URL`.";
                 showMessage(saveStatusDiv, errorMsg, 'error');
-                console.error("saveCodesToSheet Error:", errorMsg, "Current URL:", GAS_WEB_APP_URL);
+                console.error("saveCodesToSheet Error: URL not set correctly. Current URL:", GAS_WEB_APP_URL);
                 return;
             }
             if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) {
@@ -714,7 +713,7 @@
                     mode: 'cors', 
                     cache: 'no-cache',
                     headers: {
-                        'Content-Type': 'application/json', // Make sure GAS doPost expects this
+                        'Content-Type': 'application/json', 
                     },
                     body: JSON.stringify(generatedOutputForSaving),
                 });
@@ -722,7 +721,7 @@
 
                 if (!response.ok) {
                      let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                     let responseBodyText = await response.text(); // Get raw text for debugging
+                     let responseBodyText = await response.text();
                      console.error("Save !response.ok. Raw response text:", responseBodyText);
                     try {
                         const errData = JSON.parse(responseBodyText);
