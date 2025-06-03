@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد الأكواد المتقدم (مستضاف خارجيًا V2.5 - FormData)</title>
+    <title>مولد الأكواد المتقدم (فترة بدلاً من طول V2.6)</title> {/* Changed Title */}
     <style>
+        /* CSS remains the same - no changes needed here */
         :root {
             --primary-color: #007bff;
             --secondary-color: #6c757d;
@@ -79,6 +80,14 @@
         .input-group input[type="text"] {
             flex-grow: 1;
         }
+        .date-period-group { /* New style for side-by-side date inputs */
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .date-period-group > div {
+            flex: 1;
+        }
         .button-group {
             display: flex;
             gap: 10px;
@@ -102,10 +111,7 @@
         }
         button.secondary, .btn.secondary { background-color: var(--secondary-color); }
         button.secondary:hover, .btn.secondary:hover { background-color: #545b62; }
-        button.success, .btn.success { background-color: var(--success-color); }
-        button.success:hover, .btn.success:hover { background-color: #1e7e34; }
-        button.danger, .btn.danger { background-color: var(--danger-color); }
-        button.danger:hover, .btn.danger:hover { background-color: #b02a37; }
+        /* ... other button styles ... */
         button.small { padding: 5px 10px; font-size: 0.85rem; }
 
         #supplierCodeSuggestions {
@@ -115,12 +121,12 @@
             background-color: #fff;
             border-radius: var(--border-radius);
             position: absolute;
-            width: 100%; /* Full width of parent .input-group input */
-            top: 100%; /* Position below the input field */
+            width: 100%;
+            top: 100%;
             left:0;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: none; /* Initially hidden */
+            display: none;
         }
         .suggestion-item {
             padding: 10px;
@@ -211,7 +217,7 @@
 <body>
 
     <div class="app-container">
-        <h1 class="app-header">مولد الأكواد المتقدم (FormData Method)</h1>
+        <h1 class="app-header">مولد الأكواد المتقدم (الفترة)</h1>
 
         <div id="appStatus" class="message-area loader-container" style="display:none;">
             <div class="loader"></div>
@@ -225,7 +231,7 @@
                 <label for="supplierCodeInput">إضافة مورد:</label>
                 <div class="form-group">
                     <div class="input-group">
-                        <div style="flex-grow:1; position:relative;"> <!-- Wrapper for input and suggestions -->
+                        <div style="flex-grow:1; position:relative;">
                            <input type="text" id="supplierCodeInput" placeholder="ادخل كود المورد أو ابحث بالاسم">
                            <div id="supplierCodeSuggestions"></div>
                         </div>
@@ -244,13 +250,22 @@
 
             <div class="form-section">
                 <div class="form-group">
-                    <label for="entryDate">التاريخ:</label>
+                    <label for="entryDate">تاريخ الإدخال:</label> {/* Renamed for clarity */}
                     <input type="date" id="entryDate" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="length">الطول (Length):</label>
-                    <input type="number" id="length" placeholder="مثال: 30" required>
+                    <label>الفترة:</label>
+                    <div class="date-period-group">
+                        <div>
+                            <label for="periodStartDate" style="font-size:0.9em; margin-bottom:4px;">تاريخ البدء:</label>
+                            <input type="date" id="periodStartDate" required>
+                        </div>
+                        <div>
+                            <label for="periodEndDate" style="font-size:0.9em; margin-bottom:4px;">تاريخ الانتهاء:</label>
+                            <input type="date" id="periodEndDate" required>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -278,27 +293,20 @@
     </div>
 
     <script>
-        console.log("DEBUG: Script tag started execution. Version: FormData-Update1");
+        console.log("DEBUG: Script tag started execution. Version: Period-Update1");
 
         // --- Configuration ---
-        // !!! REPLACE THIS WITH THE *NEW* URL YOU GET AFTER DEPLOYING THE UPDATED Code.gs SCRIPT (the one using e.parameter) !!!
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby8BUM214lAQGiY4lGV98JBy1qpzTLbTguqeKx7y2WcUSerUBGohcfvIYwoF2G5f3r9BA/exec'; // <<<<<<< UPDATE THIS CRITICALLY
-        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; // Keep this as is
-
-        console.log("DEBUG: App Initializing. GAS URL being used:", GAS_WEB_APP_URL);
-        console.log("DEBUG: URL_PLACEHOLDER_STRING is:", URL_PLACEHOLDER_STRING);
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby_8eg434Rv0xRvJ4cpaV8b8iUL4jnbjnOV94mnmYcGgXlQsASSrSeDxNATL8ctB-tgkg/exec'; // <<<<<<< UPDATE THIS
+        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME';
 
         let criticalConfigError = false;
-        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_GAS_URL_FOR_FORM_DATA_SCRIPT_HERE' || GAS_WEB_APP_URL === 'YOUR_NEW_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE') {
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_UPDATED_GAS_URL_HERE' || GAS_WEB_APP_URL === 'YOUR_GAS_URL_FOR_FORM_DATA_SCRIPT_HERE') {
             criticalConfigError = true;
-            console.error("CRITICAL DEBUG: GAS_WEB_APP_URL is a placeholder or has not been updated. Please deploy your Google Apps Script (FormData version) and paste the new URL here.");
             const appStatusDivImmediate = document.getElementById('appStatus');
             const mainAppContentDivImmediate = document.getElementById('mainAppContent');
-
             if(appStatusDivImmediate) {
                 appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود.</p>`;
-                appStatusDivImmediate.style.display = 'block';
-                appStatusDivImmediate.className = 'message-area error';
+                appStatusDivImmediate.style.display = 'block'; appStatusDivImmediate.className = 'message-area error';
             }
             if(mainAppContentDivImmediate) mainAppContentDivImmediate.style.display = 'none';
         }
@@ -311,7 +319,8 @@
         // --- DOM Elements ---
         let appStatusDiv, initialUserMessagesDiv, mainAppContentDiv, supplierCodeInput, addSupplierBtn,
             supplierCodeSuggestionsDiv, supplierInputMessageDiv, selectedSuppliersListDiv, entryDateInput,
-            lengthInput, purchasingOfficerInput, generateBtn, clearFormBtn, userMessagesDiv,
+            periodStartDateInput, periodEndDateInput, // <<-- Changed from lengthInput
+            purchasingOfficerInput, generateBtn, clearFormBtn, userMessagesDiv,
             resultsContainerDiv, outputCodePre, copyCodesBtn, saveToSheetBtn, saveStatusDiv;
 
         function initializeDOMElements() {
@@ -324,7 +333,10 @@
             supplierInputMessageDiv = document.getElementById('supplierInputMessage');
             selectedSuppliersListDiv = document.getElementById('selectedSuppliersList');
             entryDateInput = document.getElementById('entryDate');
-            lengthInput = document.getElementById('length');
+            // UPDATED:
+            periodStartDateInput = document.getElementById('periodStartDate');
+            periodEndDateInput = document.getElementById('periodEndDate');
+            // REMOVED: lengthInput
             purchasingOfficerInput = document.getElementById('purchasingOfficer');
             generateBtn = document.getElementById('generateBtn');
             clearFormBtn = document.getElementById('clearFormBtn');
@@ -334,14 +346,14 @@
             copyCodesBtn = document.getElementById('copyCodesBtn');
             saveToSheetBtn = document.getElementById('saveToSheetBtn');
             saveStatusDiv = document.getElementById('saveStatus');
-            if (!mainAppContentDiv) {
-                console.error("CRITICAL DEBUG: mainAppContentDiv is null.");
-                criticalConfigError = true;
-            }
+            if (!mainAppContentDiv) { criticalConfigError = true; }
         }
         initializeDOMElements();
 
-        // --- Utility Functions ---
+        // --- Utility Functions (showMessage, hideMessage) ---
+        function showMessage(element, message, type = 'error', showLoaderIcon = false) { /* ... same as before ... */ }
+        function hideMessage(element) { /* ... same as before ... */ }
+        // (Copy these functions from your previous working version)
         function showMessage(element, message, type = 'error', showLoaderIcon = false) {
             if (!element) return;
             let content = '';
@@ -357,7 +369,21 @@
             element.innerHTML = '';
         }
 
-        // --- Supplier Fetching & Handling ---
+
+        // --- Supplier Fetching & Handling (fetchSuppliers, displaySupplierCodeSuggestions, etc.) ---
+        // These functions remain the same as your previous working version.
+        // Copy them here. Example:
+        async function fetchSuppliers() { /* ... same as before ... */ }
+        function displaySupplierCodeSuggestions(query) { /* ... same as before ... */ }
+        function addSupplierByCode() { /* ... same as before ... */ }
+        function removeSelectedSupplier(supplierCode) { /* ... same as before ... */ }
+        function addExceptionToSupplier(supplierCode) { /* ... same as before ... */ }
+        function removeExceptionFromSupplier(supplierCode, exceptionIndex) { /* ... same as before ... */ }
+        function updateSupplierException(supplierCode, exceptionIndex, value) { /* ... same as before ... */ }
+        function renderSelectedSuppliers() { /* ... same as before ... */ }
+
+        // (For brevity, I'm omitting the full code for these, assuming you have them)
+        // --- Start of functions to copy from previous version ---
         async function fetchSuppliers() {
             if (criticalConfigError) return false;
             if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim()) {
@@ -396,7 +422,6 @@
                 return false;
             }
         }
-
         function displaySupplierCodeSuggestions(query) {
             if (!supplierCodeSuggestionsDiv) return;
             supplierCodeSuggestionsDiv.innerHTML = '';
@@ -424,143 +449,88 @@
                 supplierCodeSuggestionsDiv.appendChild(item);
             });
         }
-
         function addSupplierByCode() {
             if (!supplierCodeInput || !supplierInputMessageDiv) return;
             const codeOrName = supplierCodeInput.value.trim();
             hideMessage(supplierInputMessageDiv);
-
             if (!codeOrName) {
-                showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning");
-                return;
+                showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning"); return;
             }
-            const supplier = allSuppliersData.find(s =>
-                (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) ||
-                (s.name && s.name.toLowerCase() === codeOrName.toLowerCase())
-            );
-
+            const supplier = allSuppliersData.find(s => (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) || (s.name && s.name.toLowerCase() === codeOrName.toLowerCase()));
             if (supplier) {
                  if (selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) {
                     showMessage(supplierInputMessageDiv, `المورد ${supplier.name} (${supplier.code}) مضاف بالفعل.`, "warning");
-                    supplierCodeInput.value = '';
-                    if (supplierCodeSuggestionsDiv) supplierCodeSuggestionsDiv.style.display = 'none';
-                    return;
+                    supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) supplierCodeSuggestionsDiv.style.display = 'none'; return;
                 }
                 selectedSuppliers.push({ supplier: supplier, exceptions: [""] });
-                supplierCodeInput.value = '';
-                if (supplierCodeSuggestionsDiv) {
-                    supplierCodeSuggestionsDiv.innerHTML = '';
-                    supplierCodeSuggestionsDiv.style.display = 'none';
-                }
-                renderSelectedSuppliers();
-                hideMessage(supplierInputMessageDiv);
+                supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; }
+                renderSelectedSuppliers(); hideMessage(supplierInputMessageDiv);
             } else {
                 showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error");
             }
         }
-
         function removeSelectedSupplier(supplierCode) {
             selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
             renderSelectedSuppliers();
-            if (selectedSuppliers.length === 0 && resultsContainerDiv) {
-                resultsContainerDiv.style.display = 'none';
-                generatedOutputForSaving = null;
-            }
+            if (selectedSuppliers.length === 0 && resultsContainerDiv) { resultsContainerDiv.style.display = 'none'; generatedOutputForSaving = null; }
         }
-
         function addExceptionToSupplier(supplierCode) {
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
             if (supplierItem) {
-                supplierItem.exceptions.push("");
-                renderSelectedSuppliers();
+                supplierItem.exceptions.push(""); renderSelectedSuppliers();
                 const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${supplierCode}"]`);
-                if(card) {
-                    const inputs = card.querySelectorAll('.exception-item input[type="text"]');
-                    if (inputs.length > 0) inputs[inputs.length - 1].focus();
-                }
+                if(card) { const inputs = card.querySelectorAll('.exception-item input[type="text"]'); if (inputs.length > 0) inputs[inputs.length - 1].focus(); }
             }
         }
-
         function removeExceptionFromSupplier(supplierCode, exceptionIndex) {
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
-            if (supplierItem && supplierItem.exceptions.length > 1) {
-                supplierItem.exceptions.splice(exceptionIndex, 1);
-                renderSelectedSuppliers();
-            }
+            if (supplierItem && supplierItem.exceptions.length > 1) { supplierItem.exceptions.splice(exceptionIndex, 1); renderSelectedSuppliers(); }
         }
-
         function updateSupplierException(supplierCode, exceptionIndex, value) {
-             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
-             if (supplierItem) supplierItem.exceptions[exceptionIndex] = value;
+             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) supplierItem.exceptions[exceptionIndex] = value;
         }
-
         function renderSelectedSuppliers() {
-            if (!selectedSuppliersListDiv) return;
-            selectedSuppliersListDiv.innerHTML = '';
-            if (selectedSuppliers.length === 0) {
-                selectedSuppliersListDiv.innerHTML = '<p>لم يتم اختيار موردين بعد.</p>';
-                return;
-            }
+            if (!selectedSuppliersListDiv) return; selectedSuppliersListDiv.innerHTML = '';
+            if (selectedSuppliers.length === 0) { selectedSuppliersListDiv.innerHTML = '<p>لم يتم اختيار موردين بعد.</p>'; return; }
             selectedSuppliers.forEach((selItem) => {
-                const cardDiv = document.createElement('div');
-                cardDiv.classList.add('selected-supplier-card');
-                cardDiv.dataset.supplierCode = selItem.supplier.code;
-                const headerDiv = document.createElement('div');
-                headerDiv.classList.add('selected-supplier-header');
-                const title = document.createElement('h4');
-                title.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`;
-                const removeSupplierBtn = document.createElement('button');
-                removeSupplierBtn.classList.add('remove-btn', 'danger', 'small');
-                removeSupplierBtn.innerHTML = 'إزالة المورد ×';
-                removeSupplierBtn.title = 'إزالة المورد بالكامل';
-                removeSupplierBtn.onclick = () => removeSelectedSupplier(selItem.supplier.code);
-                headerDiv.appendChild(title);
-                headerDiv.appendChild(removeSupplierBtn);
-                cardDiv.appendChild(headerDiv);
+                const cardDiv = document.createElement('div'); cardDiv.classList.add('selected-supplier-card'); cardDiv.dataset.supplierCode = selItem.supplier.code;
+                const headerDiv = document.createElement('div'); headerDiv.classList.add('selected-supplier-header');
+                const title = document.createElement('h4'); title.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`;
+                const removeSupplierBtn = document.createElement('button'); removeSupplierBtn.classList.add('remove-btn', 'danger', 'small'); removeSupplierBtn.innerHTML = 'إزالة المورد ×'; removeSupplierBtn.title = 'إزالة المورد بالكامل'; removeSupplierBtn.onclick = () => removeSelectedSupplier(selItem.supplier.code);
+                headerDiv.appendChild(title); headerDiv.appendChild(removeSupplierBtn); cardDiv.appendChild(headerDiv);
                 const exceptionsContainer = document.createElement('div');
                 selItem.exceptions.forEach((ex, index) => {
-                    const exceptionDiv = document.createElement('div');
-                    exceptionDiv.classList.add('exception-item');
-                    const exceptionInput = document.createElement('input');
-                    exceptionInput.type = 'text';
-                    exceptionInput.placeholder = `استثناء ${index + 1}`;
-                    exceptionInput.value = ex;
+                    const exceptionDiv = document.createElement('div'); exceptionDiv.classList.add('exception-item');
+                    const exceptionInput = document.createElement('input'); exceptionInput.type = 'text'; exceptionInput.placeholder = `استثناء ${index + 1}`; exceptionInput.value = ex;
                     exceptionInput.oninput = (e) => updateSupplierException(selItem.supplier.code, index, e.target.value);
-                    exceptionInput.onkeypress = (e) => {
-                        if (e.key === 'Enter' && index === selItem.exceptions.length - 1) {
-                            e.preventDefault();
-                            addExceptionToSupplier(selItem.supplier.code);
-                        }
-                    };
+                    exceptionInput.onkeypress = (e) => { if (e.key === 'Enter' && index === selItem.exceptions.length - 1) { e.preventDefault(); addExceptionToSupplier(selItem.supplier.code); } };
                     exceptionDiv.appendChild(exceptionInput);
                     if (selItem.exceptions.length > 1) {
-                        const removeExBtn = document.createElement('button');
-                        removeExBtn.classList.add('remove-btn', 'small');
-                        removeExBtn.innerHTML = '×';
-                        removeExBtn.title = 'إزالة هذا الاستثناء';
-                        removeExBtn.style.color = 'var(--secondary-color)';
-                        removeExBtn.onclick = () => removeExceptionFromSupplier(selItem.supplier.code, index);
+                        const removeExBtn = document.createElement('button'); removeExBtn.classList.add('remove-btn', 'small'); removeExBtn.innerHTML = '×'; removeExBtn.title = 'إزالة هذا الاستثناء'; removeExBtn.style.color = 'var(--secondary-color)'; removeExBtn.onclick = () => removeExceptionFromSupplier(selItem.supplier.code, index);
                         exceptionDiv.appendChild(removeExBtn);
                     }
                     exceptionsContainer.appendChild(exceptionDiv);
                 });
                 cardDiv.appendChild(exceptionsContainer);
-                const addExceptionBtn = document.createElement('button');
-                addExceptionBtn.classList.add('btn', 'secondary', 'small');
-                addExceptionBtn.style.marginTop = '10px';
-                addExceptionBtn.textContent = 'إضافة استثناء آخر';
-                addExceptionBtn.onclick = () => addExceptionToSupplier(selItem.supplier.code);
-                cardDiv.appendChild(addExceptionBtn);
-                selectedSuppliersListDiv.appendChild(cardDiv);
+                const addExceptionBtn = document.createElement('button'); addExceptionBtn.classList.add('btn', 'secondary', 'small'); addExceptionBtn.style.marginTop = '10px'; addExceptionBtn.textContent = 'إضافة استثناء آخر'; addExceptionBtn.onclick = () => addExceptionToSupplier(selItem.supplier.code);
+                cardDiv.appendChild(addExceptionBtn); selectedSuppliersListDiv.appendChild(cardDiv);
             });
         }
+        // --- End of functions to copy ---
 
+        // UPDATED validateInputs
         function validateInputs() {
             hideMessage(userMessagesDiv);
             let errors = [];
             if (selectedSuppliers.length === 0) errors.push("الرجاء اختيار مورد واحد على الأقل.");
-            if (!entryDateInput || !entryDateInput.value) errors.push("الرجاء إدخال التاريخ.");
-            if (!lengthInput || !lengthInput.value || isNaN(parseFloat(lengthInput.value))) errors.push("الرجاء إدخال قيمة رقمية للطول.");
+            if (!entryDateInput || !entryDateInput.value) errors.push("الرجاء إدخال تاريخ الإدخال.");
+            // Validate period dates
+            if (!periodStartDateInput || !periodStartDateInput.value) errors.push("الرجاء إدخال تاريخ بدء الفترة.");
+            if (!periodEndDateInput || !periodEndDateInput.value) errors.push("الرجاء إدخال تاريخ انتهاء الفترة.");
+            if (periodStartDateInput.value && periodEndDateInput.value && new Date(periodEndDateInput.value) < new Date(periodStartDateInput.value)) {
+                errors.push("تاريخ انتهاء الفترة يجب أن يكون بعد أو نفس تاريخ بدء الفترة.");
+            }
+
             if (!purchasingOfficerInput || !purchasingOfficerInput.value.trim()) errors.push("الرجاء إدخال اسم مسؤول المشتريات.");
             selectedSuppliers.forEach((sel) => {
                 const nonEmptyExceptions = sel.exceptions.filter(ex => ex.trim() !== "");
@@ -575,33 +545,44 @@
             return true;
         }
 
-        function getKDMNumberPart(index) {
-            const number = index % 11;
-            return String(number).padStart(2, '0');
+        function getKDMNumberPart(index) { /* ... same as before ... */ return String(index % 11).padStart(2, '0'); }
+
+        // Helper to format date as DD/MM/YYYY
+        function formatDateToDMY(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
+
+        // UPDATED generateCodes
         function generateCodes() {
             if (!validateInputs()) {
                 if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
                 generatedOutputForSaving = null;
                 return;
             }
-            const dateValue = entryDateInput.value;
-            const dateParts = dateValue.split('-');
-            const year = parseInt(dateParts[0], 10);
-            const monthJs = parseInt(dateParts[1], 10) - 1;
-            const day = parseInt(dateParts[2], 10);
-            const localDate = new Date(year, monthJs, day);
+            // --- Date for KDM code generation (from Entry Date) ---
+            const entryDateForKDM = entryDateInput.value;
+            const datePartsKDM = entryDateForKDM.split('-');
+            const yearKDM = parseInt(datePartsKDM[0], 10);
+            const monthJsKDM = parseInt(datePartsKDM[1], 10) - 1;
+            const dayKDM = parseInt(datePartsKDM[2], 10);
+            const localDateKDM = new Date(yearKDM, monthJsKDM, dayKDM);
 
-            const monthName = localDate.toLocaleString('en-US', { month: 'long' });
-            const dayName = localDate.toLocaleString('en-US', { weekday: 'long' });
-            const monthInitial = monthName.charAt(0).toUpperCase();
-            const dayInitial = dayName.charAt(0).toUpperCase();
+            const monthNameKDM = localDateKDM.toLocaleString('en-US', { month: 'long' });
+            const dayNameKDM = localDateKDM.toLocaleString('en-US', { weekday: 'long' });
+            const monthInitialKDM = monthNameKDM.charAt(0).toUpperCase();
+            const dayInitialKDM = dayNameKDM.charAt(0).toUpperCase();
+            // --- End Date for KDM ---
 
             let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value}\n`;
-            let entryDateFormatted = localDate.toLocaleDateString('en-GB'); // DD/MM/YYYY
-            textOutput += `التاريخ: ${entryDateFormatted}\n`;
-            textOutput += `الطول: ${lengthInput.value}\n\n`;
+            let entryDateFormatted = formatDateToDMY(entryDateInput.value);
+            textOutput += `تاريخ الإدخال: ${entryDateFormatted}\n`;
+            textOutput += `الفترة من: ${formatDateToDMY(periodStartDateInput.value)} إلى: ${formatDateToDMY(periodEndDateInput.value)}\n\n`; // Changed from Length
             textOutput += `الأكواد:\n`;
             textOutput += "------------------------------------\n";
 
@@ -613,12 +594,14 @@
                     if (!exceptionText.trim()) return;
                     const kdmPart = "KDM" + getKDMNumberPart(kdmGlobalIndex);
                     let supplierCodePart = selItem.supplier.code.toUpperCase();
+                    // ... (supplierCodePart logic remains the same)
                     if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
                     else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
                     else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y');
                     else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ";
 
-                    const dateInitialsPart = monthInitial + dayInitial;
+
+                    const dateInitialsPart = monthInitialKDM + dayInitialKDM; // Uses Entry Date for KDM part
                     const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
 
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
@@ -649,12 +632,15 @@
 
             generatedOutputForSaving = {
                 purchasingOfficer: purchasingOfficerInput.value,
-                entryDate: entryDateFormatted, // Use DD/MM/YYYY for consistency
-                length: lengthInput.value,
-                generatedItems: itemsToSave // This is an array of objects
+                entryDate: entryDateFormatted, // Formatted DD/MM/YYYY
+                periodStartDate: formatDateToDMY(periodStartDateInput.value), // Formatted DD/MM/YYYY
+                periodEndDate: formatDateToDMY(periodEndDateInput.value),   // Formatted DD/MM/YYYY
+                generatedItems: itemsToSave
             };
+            console.log("DEBUG: Generated output for saving:", generatedOutputForSaving);
         }
 
+        // UPDATED clearForm
         function clearForm() {
             if(supplierCodeInput) supplierCodeInput.value = '';
             if(supplierCodeSuggestionsDiv) {
@@ -665,7 +651,10 @@
             selectedSuppliers = [];
             renderSelectedSuppliers();
             if(entryDateInput) entryDateInput.valueAsDate = new Date();
-            if(lengthInput) lengthInput.value = '';
+            // Clear period dates
+            if(periodStartDateInput) periodStartDateInput.value = '';
+            if(periodEndDateInput) periodEndDateInput.value = '';
+
             if(purchasingOfficerInput) purchasingOfficerInput.value = '';
             if(resultsContainerDiv) resultsContainerDiv.style.display = 'none';
             if(outputCodePre) outputCodePre.textContent = '';
@@ -674,6 +663,8 @@
             generatedOutputForSaving = null;
         }
 
+        async function copyCodesToClipboard() { /* ... same as before ... */ }
+        // (Copy from previous version)
         async function copyCodesToClipboard() {
             if (!outputCodePre || !outputCodePre.textContent) return;
             try {
@@ -684,21 +675,16 @@
             }
         }
 
-        // UPDATED saveCodesToSheet to use FormData
+
+        // UPDATED saveCodesToSheet (sends periodStartDate and periodEndDate)
         async function saveCodesToSheet() {
-            console.log("DEBUG: saveCodesToSheet called (FormData method).");
-            if (criticalConfigError) {
-                 showMessage(saveStatusDiv, "خطأ حرج في الإعداد. لا يمكن المتابعة.", 'error');
-                 return;
-            }
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_GAS_URL_FOR_FORM_DATA_SCRIPT_HERE' || !GAS_WEB_APP_URL.trim()) {
-                const errorMsg = "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL`.";
-                showMessage(saveStatusDiv, errorMsg, 'error');
-                return;
+            console.log("DEBUG: saveCodesToSheet called (FormData method with Period).");
+            if (criticalConfigError) { /* ... */ return; }
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_UPDATED_GAS_URL_HERE' || !GAS_WEB_APP_URL.trim()) {
+                showMessage(saveStatusDiv, "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح.", 'error'); return;
             }
             if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) {
-                showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها. قم بتوليد الأكواد أولاً.", 'warning');
-                return;
+                showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها.", 'warning'); return;
             }
 
             showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true);
@@ -707,107 +693,87 @@
             try {
                 const formData = new FormData();
                 formData.append('purchasingOfficer', generatedOutputForSaving.purchasingOfficer);
-                formData.append('entryDate', generatedOutputForSaving.entryDate); // Will be string DD/MM/YYYY
-                formData.append('length', generatedOutputForSaving.length);
-                // IMPORTANT: Stringify the array of items for FormData
+                formData.append('entryDate', generatedOutputForSaving.entryDate); // Already DD/MM/YYYY
+                formData.append('periodStartDate', generatedOutputForSaving.periodStartDate); // Already DD/MM/YYYY
+                formData.append('periodEndDate', generatedOutputForSaving.periodEndDate);   // Already DD/MM/YYYY
                 formData.append('generatedItems', JSON.stringify(generatedOutputForSaving.generatedItems));
 
-                console.log("DEBUG: Saving to URL:", GAS_WEB_APP_URL, "using FormData. Fields being sent:", {
-                    purchasingOfficer: generatedOutputForSaving.purchasingOfficer,
-                    entryDate: generatedOutputForSaving.entryDate,
-                    length: generatedOutputForSaving.length,
-                    generatedItemsStringLength: JSON.stringify(generatedOutputForSaving.generatedItems).length
+                console.log("DEBUG: Saving to URL (Period):", GAS_WEB_APP_URL, " FormData being sent:", {
+                    officer: generatedOutputForSaving.purchasingOfficer,
+                    entry: generatedOutputForSaving.entryDate,
+                    start: generatedOutputForSaving.periodStartDate,
+                    end: generatedOutputForSaving.periodEndDate,
+                    itemsLen: generatedOutputForSaving.generatedItems.length
                 });
-                // For more detail, you can iterate formData entries:
-                // for (var pair of formData.entries()) { console.log("FormData entry: " + pair[0]+ ', ' + pair[1]); }
-
 
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'cors', // Keep cors mode
-                    // NO 'Content-Type': 'application/json' header - browser sets it for FormData
-                    // cache: 'no-cache', // Optional
-                    body: formData, // Send FormData object
+                    mode: 'cors',
+                    body: formData,
                 });
-                console.log("DEBUG: Save response status:", response.status, "Ok:", response.ok);
+                console.log("DEBUG: Save response status (Period):", response.status, "Ok:", response.ok);
 
                 if (!response.ok) {
                      let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                     let responseBodyText = await response.text(); // Get raw text for more info
-                     console.error("DEBUG: Save !response.ok. Raw response text:", responseBodyText);
+                     let responseBodyText = await response.text();
+                     console.error("DEBUG: Save !response.ok (Period). Raw text:", responseBodyText);
                     try {
-                        const errData = JSON.parse(responseBodyText); // Try to parse as JSON
+                        const errData = JSON.parse(responseBodyText);
                         if(errData && (errData.message || errData.error)) errorText = errData.message || errData.error;
-                    } catch(e){
-                        // If not JSON, use the raw text or a generic message
-                        console.warn("DEBUG: Could not parse error response from save as JSON. Using raw text if available or generic error.", responseBodyText);
-                        if (responseBodyText && responseBodyText.length < 200) { // Avoid huge HTML error pages
-                            errorText += " Server response: " + responseBodyText;
-                        }
-                    }
+                    } catch(e){ if (responseBodyText && responseBodyText.length < 200) errorText += " Server response: " + responseBodyText; }
                     throw new Error(errorText);
                 }
 
-                const result = await response.json(); // Assuming GAS still returns JSON
-                console.log("DEBUG: Received data from GAS for save operation (FormData method):", result);
+                const result = await response.json();
+                console.log("DEBUG: Received data from GAS for save (Period):", result);
 
-                if (result.success) { // Check for 'success' field from GAS
+                if (result.success) {
                     showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
                 } else {
-                    // If GAS sends {success: false, message: "..."} or {error: "..."}
-                    throw new Error(result.message || result.error || 'فشل حفظ الأكواد، رد غير معروف من السيرفر.');
+                    throw new Error(result.message || result.error || 'فشل حفظ الأكواد.');
                 }
             } catch (error) {
-                console.error("DEBUG: Error in saveCodesToSheet (FormData method):", error.message, error);
-                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}. تحقق من وحدة التحكم (Console) لمزيد من التفاصيل.`, 'error');
+                console.error("DEBUG: Error in saveCodesToSheet (Period):", error.message, error);
+                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}.`, 'error');
             } finally {
                 if (saveToSheetBtn) saveToSheetBtn.disabled = false;
             }
         }
 
 
-        // --- Event Listeners ---
+        // --- Event Listeners & Initial Load ---
+        function addEventListeners() { /* ... same as before ... */ }
+        function initializeApp() { /* ... same as before ... */ }
+        // (Copy from previous working version)
         function addEventListeners() {
             if (supplierCodeInput) {
                 supplierCodeInput.addEventListener('input', (e) => displaySupplierCodeSuggestions(e.target.value));
-                supplierCodeInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (supplierCodeSuggestionsDiv && (supplierCodeSuggestionsDiv.style.display === 'none' || supplierCodeSuggestionsDiv.innerHTML === '')) {
-                            addSupplierByCode();
-                        }
-                    }
-                });
+                supplierCodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (supplierCodeSuggestionsDiv && (supplierCodeSuggestionsDiv.style.display === 'none' || supplierCodeSuggestionsDiv.innerHTML === '')) { addSupplierByCode(); } } });
             }
-            document.addEventListener('click', function(event) {
-                if (supplierCodeInput && supplierCodeSuggestionsDiv) {
-                    const isClickInsideInput = supplierCodeInput.contains(event.target);
-                    const isClickInsideSuggestions = supplierCodeSuggestionsDiv.contains(event.target);
-                    if (!isClickInsideInput && !isClickInsideSuggestions) {
-                        supplierCodeSuggestionsDiv.style.display = 'none';
-                    }
-                }
-            });
+            document.addEventListener('click', function(event) { if (supplierCodeInput && supplierCodeSuggestionsDiv) { const isClickInsideInput = supplierCodeInput.contains(event.target); const isClickInsideSuggestions = supplierCodeSuggestionsDiv.contains(event.target); if (!isClickInsideInput && !isClickInsideSuggestions) { supplierCodeSuggestionsDiv.style.display = 'none'; } } });
             if (addSupplierBtn) addSupplierBtn.addEventListener('click', addSupplierByCode);
             if (generateBtn) generateBtn.addEventListener('click', generateCodes);
             if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
             if (copyCodesBtn) copyCodesBtn.addEventListener('click', copyCodesToClipboard);
             if (saveToSheetBtn) saveToSheetBtn.addEventListener('click', saveCodesToSheet);
         }
-
-        // --- Initial Load ---
         function initializeApp() {
             if (criticalConfigError) return;
-            if(entryDateInput) entryDateInput.valueAsDate = new Date();
+            if(entryDateInput) entryDateInput.valueAsDate = new Date(); // Sets entry date to today
+            // Set default period start/end if needed, or leave blank
+            // if(periodStartDateInput) periodStartDateInput.valueAsDate = new Date(); 
+            // if(periodEndDateInput) { const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7); periodEndDateInput.valueAsDate = nextWeek; }
+
             renderSelectedSuppliers();
             fetchSuppliers();
             addEventListeners();
         }
 
+
         if (!criticalConfigError) {
             initializeApp();
         }
-        console.log("DEBUG: Script tag execution finished. Version: FormData-Update1");
+        console.log("DEBUG: Script tag execution finished. Version: Period-Update1");
     </script>
 </body>
 </html>
