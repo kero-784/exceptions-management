@@ -278,26 +278,27 @@
     </div>
 
     <script>
-        console.log("DEBUG: Script tag started execution.");
+        console.log("DEBUG: Script tag started execution. Version: FullUpdate1");
 
         // --- Configuration ---
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGH71D-FbPBhXgV23hzKnHiY4wVaU3tgfWFnt1xLgsHZc2ig0EtmlVp8Q89C9YUkyBUA/exec';
-        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; 
+        // !!! REPLACE THIS WITH THE *NEW* URL YOU GET AFTER DEPLOYING THE UPDATED Code.gs SCRIPT !!!
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxARGqhkOyusoGC-IZP0ww-bsOw3yRJ7VopajM2ZkH_k90_-lwSfBlrU_XucvUMKwH89w/exec';
+        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; // Keep this as is
 
         console.log("DEBUG: App Initializing. GAS URL being used:", GAS_WEB_APP_URL);
         console.log("DEBUG: URL_PLACEHOLDER_STRING is:", URL_PLACEHOLDER_STRING);
 
         let criticalConfigError = false;
-        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) { 
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_NEW_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE') {
             criticalConfigError = true;
-            console.error("CRITICAL DEBUG: GAS_WEB_APP_URL is still the placeholder value.");
-            const appStatusDivImmediate = document.getElementById('appStatus'); // Get it here as other DOM vars might not be ready
+            console.error("CRITICAL DEBUG: GAS_WEB_APP_URL is a placeholder or has not been updated. Please deploy your Google Apps Script and paste the new URL here.");
+            const appStatusDivImmediate = document.getElementById('appStatus');
             const mainAppContentDivImmediate = document.getElementById('mainAppContent');
 
             if(appStatusDivImmediate) {
-                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script بشكل صحيح. يرجى الاتصال بمسؤول النظام.</p>`;
+                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود.</p>`;
                 appStatusDivImmediate.style.display = 'block';
-                appStatusDivImmediate.className = 'message-area error'; // Ensure styling
+                appStatusDivImmediate.className = 'message-area error';
                 console.log("DEBUG: Displayed critical config error in appStatusDiv.");
             } else {
                 console.error("DEBUG: appStatusDiv not found for critical error message.");
@@ -309,7 +310,7 @@
                  console.error("DEBUG: mainAppContentDiv not found for hiding.");
             }
         } else {
-            console.log("DEBUG: GAS_WEB_APP_URL is NOT the placeholder. Configuration seems OK.");
+            console.log("DEBUG: GAS_WEB_APP_URL seems to be set. Configuration might be OK.");
         }
 
         // --- Global State ---
@@ -319,11 +320,9 @@
         console.log("DEBUG: Global state variables initialized.");
 
         // --- DOM Elements ---
-        // Wrap DOM element fetching in a function or try-catch if concerned about timing,
-        // but with script at end of body, they should generally be available.
-        let appStatusDiv, initialUserMessagesDiv, mainAppContentDiv, supplierCodeInput, addSupplierBtn, 
-            supplierCodeSuggestionsDiv, supplierInputMessageDiv, selectedSuppliersListDiv, entryDateInput, 
-            lengthInput, purchasingOfficerInput, generateBtn, clearFormBtn, userMessagesDiv, 
+        let appStatusDiv, initialUserMessagesDiv, mainAppContentDiv, supplierCodeInput, addSupplierBtn,
+            supplierCodeSuggestionsDiv, supplierInputMessageDiv, selectedSuppliersListDiv, entryDateInput,
+            lengthInput, purchasingOfficerInput, generateBtn, clearFormBtn, userMessagesDiv,
             resultsContainerDiv, outputCodePre, copyCodesBtn, saveToSheetBtn, saveStatusDiv;
 
         function initializeDOMElements() {
@@ -349,17 +348,16 @@
                 saveToSheetBtn = document.getElementById('saveToSheetBtn');
                 saveStatusDiv = document.getElementById('saveStatus');
                 console.log("DEBUG: DOM elements references initialized successfully.");
-                // Check if a critical element is missing
                 if (!mainAppContentDiv) {
-                    console.error("CRITICAL DEBUG: mainAppContentDiv is null after getElementById. HTML structure might be wrong or script is running too early.");
-                    criticalConfigError = true; // Treat this as a critical error too
+                    console.error("CRITICAL DEBUG: mainAppContentDiv is null. HTML structure might be wrong.");
+                    criticalConfigError = true;
                 }
             } catch (e) {
                 console.error("CRITICAL DEBUG: Error initializing DOM elements:", e);
-                criticalConfigError = true; // If DOM elements can't be found, app can't run
+                criticalConfigError = true;
             }
         }
-        initializeDOMElements(); // Call it early after config check
+        initializeDOMElements();
 
         // --- Utility Functions ---
         function showMessage(element, message, type = 'error', showLoaderIcon = false) {
@@ -367,7 +365,7 @@
                 console.error(`DEBUG: showMessage called with null element. Message: ${message}, Type: ${type}`);
                 return;
             }
-            console.log(`DEBUG: showMessage - Element: ${element.id}, Type: ${type}, Message: ${message.substring(0,50)}...`);
+            console.log(`DEBUG: showMessage - Element: ${element.id}, Type: ${type}, Message: ${String(message).substring(0,50)}...`);
             let content = '';
             if (showLoaderIcon) {
                 content += '<div class="loader" style="margin-bottom:5px;"></div>';
@@ -386,41 +384,42 @@
             element.style.display = 'none';
             element.innerHTML = '';
         }
-        
+
         // --- Supplier Fetching & Handling (using fetch) ---
         async function fetchSuppliers() {
             console.log("DEBUG: fetchSuppliers function called.");
-            if (criticalConfigError) { // Re-check as DOM init might set this
+            if (criticalConfigError) {
                 console.error("DEBUG: fetchSuppliers aborted due to criticalConfigError.");
                 return false;
             }
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) { 
-                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود بالرابط الذي تم نشره.";
+             // Redundant check, already handled at top, but good for safety
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_NEW_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE' || !GAS_WEB_APP_URL.trim()) {
+                const errorMsg = "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL` في الكود.";
                 showMessage(appStatusDiv, errorMsg, "error");
                 console.error("DEBUG: fetchSuppliers Error: URL not set correctly. Current URL:", GAS_WEB_APP_URL);
                 if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
                 return false;
             }
-            
+
             showMessage(appStatusDiv, 'جاري تحميل الموردين...', 'info', true);
-            if(mainAppContentDiv) mainAppContentDiv.style.display = 'none'; // Hide main content while loading
+            if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
 
             try {
                 console.log("DEBUG: Fetching suppliers from URL:", GAS_WEB_APP_URL + '?action=getSuppliers');
                 const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers', {
                     method: 'GET',
-                    mode: 'cors', 
+                    mode: 'cors',
                 });
                 console.log("DEBUG: Fetch response status:", response.status, "Ok:", response.ok);
 
                 if (!response.ok) {
                     let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                    let responseBodyText = await response.text(); 
+                    let responseBodyText = await response.text();
                     console.error("DEBUG: Fetch !response.ok. Raw response text:", responseBodyText);
                     try {
-                        const errData = JSON.parse(responseBodyText); 
+                        const errData = JSON.parse(responseBodyText);
                         if(errData && (errData.error || errData.message) ) errorText = errData.error || errData.message;
-                    } catch(e){ 
+                    } catch(e){
                         console.warn("DEBUG: Could not parse error response as JSON. Raw text:", responseBodyText);
                     }
                     throw new Error(errorText);
@@ -428,10 +427,10 @@
                 const data = await response.json();
                 console.log("DEBUG: Received data from GAS for suppliers:", data);
 
-                if (data.error) { 
+                if (data.error) {
                     throw new Error(`Server error from GAS: ${data.error}`);
                 }
-                
+
                 allSuppliersData = data.suppliers || [];
                 console.log("DEBUG: Processed suppliers data:", allSuppliersData);
 
@@ -441,7 +440,7 @@
                      hideMessage(initialUserMessagesDiv);
                 }
                 hideMessage(appStatusDiv);
-                if(mainAppContentDiv) mainAppContentDiv.style.display = 'block'; // Show main content after loading
+                if(mainAppContentDiv) mainAppContentDiv.style.display = 'block';
                 console.log("DEBUG: Suppliers fetched and processed successfully. mainAppContent should be visible.");
                 return true;
             } catch (error) {
@@ -453,7 +452,6 @@
         }
 
         function displaySupplierCodeSuggestions(query) {
-            // console.log("DEBUG: displaySupplierCodeSuggestions, query:", query);
             if (!supplierCodeSuggestionsDiv) { console.warn("DEBUG: supplierCodeSuggestionsDiv is null"); return; }
             supplierCodeSuggestionsDiv.innerHTML = '';
             if (!query) {
@@ -466,11 +464,7 @@
                 (s.name && s.name.toLowerCase().includes(lowerQuery))
             ).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
 
-            if (filtered.length > 0) {
-                supplierCodeSuggestionsDiv.style.display = 'block';
-            } else {
-                supplierCodeSuggestionsDiv.style.display = 'none';
-            }
+            supplierCodeSuggestionsDiv.style.display = filtered.length > 0 ? 'block' : 'none';
 
             filtered.slice(0, 7).forEach(supplier => {
                 const item = document.createElement('div');
@@ -485,7 +479,7 @@
                 supplierCodeSuggestionsDiv.appendChild(item);
             });
         }
-        
+
         function addSupplierByCode() {
             console.log("DEBUG: addSupplierByCode called.");
             if (!supplierCodeInput || !supplierInputMessageDiv) { console.warn("DEBUG: Missing input elements for addSupplierByCode"); return; }
@@ -496,8 +490,8 @@
                 showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning");
                 return;
             }
-            const supplier = allSuppliersData.find(s => 
-                (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) || 
+            const supplier = allSuppliersData.find(s =>
+                (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) ||
                 (s.name && s.name.toLowerCase() === codeOrName.toLowerCase())
             );
 
@@ -521,7 +515,7 @@
                 showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error");
             }
         }
-        
+
         function removeSelectedSupplier(supplierCode) {
             console.log("DEBUG: removeSelectedSupplier, code:", supplierCode);
             selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
@@ -556,7 +550,6 @@
         }
 
         function updateSupplierException(supplierCode, exceptionIndex, value) {
-             // console.log("DEBUG: updateSupplierException, code:", supplierCode, "index:", exceptionIndex, "value:", value);
              const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
              if (supplierItem) {
                 supplierItem.exceptions[exceptionIndex] = value;
@@ -661,46 +654,45 @@
                 return;
             }
             const dateValue = entryDateInput.value;
-
-            const dateParts = dateValue.split('-'); 
+            const dateParts = dateValue.split('-');
             const year = parseInt(dateParts[0], 10);
-            const monthJs = parseInt(dateParts[1], 10) - 1; 
+            const monthJs = parseInt(dateParts[1], 10) - 1;
             const day = parseInt(dateParts[2], 10);
-            const localDate = new Date(year, monthJs, day); 
+            const localDate = new Date(year, monthJs, day);
 
             const monthName = localDate.toLocaleString('en-US', { month: 'long' });
             const dayName = localDate.toLocaleString('en-US', { weekday: 'long' });
             const monthInitial = monthName.charAt(0).toUpperCase();
             const dayInitial = dayName.charAt(0).toUpperCase();
-            
+
             let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value}\n`;
             let entryDateFormatted = localDate.toLocaleDateString('en-GB');
             textOutput += `التاريخ: ${entryDateFormatted}\n`;
             textOutput += `الطول: ${lengthInput.value}\n\n`;
             textOutput += `الأكواد:\n`;
             textOutput += "------------------------------------\n";
-            
+
             let itemsToSave = [];
             let kdmGlobalIndex = 0;
-            
+
             selectedSuppliers.forEach((selItem) => {
                 selItem.exceptions.forEach((exceptionText) => {
-                    if (!exceptionText.trim()) return; 
+                    if (!exceptionText.trim()) return;
                     const kdmPart = "KDM" + getKDMNumberPart(kdmGlobalIndex);
                     let supplierCodePart = selItem.supplier.code.toUpperCase();
                     if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
                     else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
-                    else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y'); 
-                    else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ"; 
-                    
+                    else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y');
+                    else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ";
+
                     const dateInitialsPart = monthInitial + dayInitial;
                     const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
-                    
+
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
                     textOutput += `الاستثناء: ${exceptionText}\n`;
                     textOutput += `الكود: ${finalCode}\n`;
                     textOutput += "------------------------------------\n";
-                    
+
                     itemsToSave.push({
                         supplierName: selItem.supplier.name,
                         supplierCode: selItem.supplier.code,
@@ -710,18 +702,18 @@
                     kdmGlobalIndex++;
                 });
             });
-            
+
             if (itemsToSave.length === 0) {
                  showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning');
                  if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
                  generatedOutputForSaving = null;
                  return;
             }
-            
+
             if (outputCodePre) outputCodePre.textContent = textOutput;
             if (resultsContainerDiv) resultsContainerDiv.style.display = 'block';
             hideMessage(userMessagesDiv);
-            
+
             generatedOutputForSaving = {
                 purchasingOfficer: purchasingOfficerInput.value,
                 entryDate: entryDateFormatted,
@@ -730,7 +722,7 @@
             };
             console.log("DEBUG: Codes generated successfully. Output for saving:", generatedOutputForSaving);
         }
-        
+
         function clearForm() {
             console.log("DEBUG: clearForm called.");
             if(supplierCodeInput) supplierCodeInput.value = '';
@@ -761,7 +753,6 @@
             try {
                 await navigator.clipboard.writeText(outputCodePre.textContent);
                 showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success');
-                console.log("DEBUG: Codes copied to clipboard.");
             } catch (err) {
                 showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error');
                 console.error("DEBUG: Failed to copy codes:", err);
@@ -770,8 +761,8 @@
 
         async function saveCodesToSheet() {
             console.log("DEBUG: saveCodesToSheet called.");
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim() || GAS_WEB_APP_URL.includes("YOUR_UNIQUE_DEPLOYMENT_ID")) {
-                const errorMsg = "خطأ: رابط Google Apps Script غير مُعرف بشكل صحيح في الكود. يرجى تحديث `GAS_WEB_APP_URL`.";
+            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_NEW_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE' || !GAS_WEB_APP_URL.trim()) {
+                const errorMsg = "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح. يرجى تحديث `GAS_WEB_APP_URL`.";
                 showMessage(saveStatusDiv, errorMsg, 'error');
                 console.error("DEBUG: saveCodesToSheet Error: URL not set correctly. Current URL:", GAS_WEB_APP_URL);
                 return;
@@ -789,7 +780,7 @@
                 console.log("DEBUG: Saving to URL:", GAS_WEB_APP_URL, "Payload:", generatedOutputForSaving);
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'cors', 
+                    mode: 'cors',
                     cache: 'no-cache',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify(generatedOutputForSaving),
@@ -808,10 +799,10 @@
                     }
                     throw new Error(errorText);
                 }
-                
+
                 const result = await response.json();
                 console.log("DEBUG: Received data from GAS for save operation:", result);
-                
+
                 if (result.success) {
                     showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
                 } else {
@@ -832,7 +823,7 @@
                 supplierCodeInput.addEventListener('input', (e) => displaySupplierCodeSuggestions(e.target.value));
                 supplierCodeInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
-                        e.preventDefault(); 
+                        e.preventDefault();
                         if (supplierCodeSuggestionsDiv && (supplierCodeSuggestionsDiv.style.display === 'none' || supplierCodeSuggestionsDiv.innerHTML === '')) {
                             addSupplierByCode();
                         }
@@ -863,27 +854,25 @@
         function initializeApp() {
             console.log("DEBUG: initializeApp function called.");
             if (criticalConfigError) {
-                console.error("DEBUG: initializeApp aborted due to criticalConfigError (checked again).");
-                return; 
+                console.error("DEBUG: initializeApp aborted due to criticalConfigError.");
+                return;
             }
             if(entryDateInput) entryDateInput.valueAsDate = new Date(); else { console.warn("DEBUG: entryDateInput not found during init.");}
-            renderSelectedSuppliers(); 
-            fetchSuppliers(); 
-            addEventListeners(); // Add event listeners after DOM elements are confirmed to be available
+            renderSelectedSuppliers();
+            fetchSuppliers(); // This will try to show mainAppContent on success
+            addEventListeners();
             console.log("DEBUG: initializeApp completed.");
         }
 
-        // Final check before initializing the app
-        console.log("DEBUG: Script nearing end. Checking criticalConfigError and mainAppContent visibility before calling initializeApp.");
+        console.log("DEBUG: Script nearing end. Checking criticalConfigError before calling initializeApp.");
         console.log("DEBUG: criticalConfigError state:", criticalConfigError);
-        if (mainAppContentDiv) { // Check if mainAppContentDiv was found
-            console.log("DEBUG: mainAppContent display style:", mainAppContentDiv.style.display);
-             // The mainAppContent is initially display:none in HTML, it's shown by fetchSuppliers on success
+        if (mainAppContentDiv) {
+            console.log("DEBUG: mainAppContent display style at script end (before init):", mainAppContentDiv.style.display);
         } else {
             console.error("DEBUG: mainAppContentDiv is NULL before final initializeApp check. App cannot start correctly.");
-            criticalConfigError = true; // Ensure app doesn't try to init if essential parts are missing
+            criticalConfigError = true;
         }
-        
+
         if (!criticalConfigError) {
             console.log("DEBUG: Proceeding to call initializeApp().");
             initializeApp();
@@ -891,7 +880,7 @@
             console.error("DEBUG: initializeApp() was NOT called due to criticalConfigError being true.");
         }
 
-        console.log("DEBUG: Script tag execution finished.");
+        console.log("DEBUG: Script tag execution finished. Version: FullUpdate1");
     </script>
 </body>
 </html>
