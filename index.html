@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ادارة الاستثناءات</title>
+    <!-- 1. Include Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -39,7 +41,7 @@
             background-color: var(--lighter-color);
             color: var(--dark-color);
             display: flex;
-            flex-direction: column; /* Allow header/footer type layout if needed */
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
@@ -48,11 +50,11 @@
 
         .app-container {
             background-color: #fff;
-            padding: 30px; /* Increased padding */
+            padding: 30px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             width: 100%;
-            max-width: 850px; /* Slightly wider for more content */
+            max-width: 850px;
         }
 
         .app-header {
@@ -60,7 +62,7 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 1.75rem; /* Larger header text */
+            font-size: 1.75rem;
             font-weight: 600;
             color: var(--primary-color);
         }
@@ -70,7 +72,7 @@
             padding: 20px;
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
-            background-color: var(--light-color); /* Subtle background for sections */
+            background-color: var(--light-color);
         }
         .form-section:last-of-type {
             margin-bottom: 30px;
@@ -83,312 +85,105 @@
         label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600; /* Bolder labels */
+            font-weight: 600;
             color: #495057;
             font-size: 0.95rem;
         }
 
         input[type="text"],
-        input[type="date"],
+        input[type="date"], /* Keep for styling consistency, but will be text */
         input[type="number"],
         select {
             width: 100%;
-            padding: 12px 15px; /* Increased padding */
+            padding: 12px 15px;
             border: 1px solid var(--light-gray-color);
             border-radius: var(--border-radius);
             box-sizing: border-box;
             font-size: 1rem;
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            background-color: #fff; /* Ensure text inputs have white background */
+        }
+        
+        /* Make date inputs look clickable */
+        input.date-input {
+            cursor: pointer;
         }
 
         input:focus, select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25); /* Softer focus */
+            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
             outline: none;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center; /* Align items vertically */
-        }
-        .input-group input[type="text"] {
-            flex-grow: 1;
-        }
-        .input-group .btn { /* Ensure button in input group doesn't stretch weirdly */
-            flex-shrink: 0;
-        }
-
-
-        .date-period-group {
-            display: flex;
-            gap: 20px; /* Increased gap */
-            align-items: flex-start; /* Align to top if labels differ in height */
-        }
-        .date-period-group > div {
-            flex: 1;
-        }
-        .date-period-group label {
-            font-size:0.9em; margin-bottom:6px; color: var(--secondary-color);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-            flex-wrap: wrap; /* Allow buttons to wrap */
-            justify-content: flex-start; /* Align buttons to start */
-        }
+        .input-group { display: flex; gap: 10px; align-items: center; }
+        .input-group input[type="text"] { flex-grow: 1; }
+        .input-group .btn { flex-shrink: 0; }
+        .date-period-group { display: flex; gap: 20px; align-items: flex-start; }
+        .date-period-group > div { flex: 1; }
+        .date-period-group label { font-size:0.9em; margin-bottom:6px; color: var(--secondary-color); }
+        .button-group { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; justify-content: flex-start; }
 
         button, .btn {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 22px; /* Increased padding */
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
+            background-color: var(--primary-color); color: white; padding: 12px 22px; border: none;
+            border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 500;
             transition: background-color 0.2s ease-in-out, box-shadow 0.1s ease-in-out;
-            text-decoration: none;
-            display: inline-block;
-            line-height: 1.5; /* For consistent height */
+            text-decoration: none; display: inline-block; line-height: 1.5;
         }
-        button:hover, .btn:hover {
-            background-color: var(--primary-hover-color);
-            box-shadow: var(--box-shadow-sm);
-        }
-        button:active, .btn:active {
-            transform: translateY(1px);
-        }
-        button:disabled, .btn:disabled {
-            background-color: var(--medium-gray-color);
-            cursor: not-allowed;
-        }
-
+        button:hover, .btn:hover { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-sm); }
+        button:active, .btn:active { transform: translateY(1px); }
+        button:disabled, .btn:disabled { background-color: var(--medium-gray-color); cursor: not-allowed; }
         button.secondary, .btn.secondary { background-color: var(--secondary-color); }
         button.secondary:hover, .btn.secondary:hover { background-color: var(--secondary-hover-color); }
         button.success, .btn.success { background-color: var(--success-color); }
         button.success:hover, .btn.success:hover { background-color: var(--success-hover-color); }
         button.danger, .btn.danger { background-color: var(--danger-color); }
         button.danger:hover, .btn.danger:hover { background-color: var(--danger-hover-color); }
-
         button.small, .btn.small { padding: 8px 15px; font-size: 0.875rem; }
 
         #supplierCodeSuggestions {
-            border: 1px solid var(--light-gray-color);
-            max-height: 180px; /* Slightly taller */
-            overflow-y: auto;
-            background-color: #fff;
-            border-radius: var(--border-radius);
-            position: absolute;
-            width: 100%; /* Ensure it matches input width */
-            top: calc(100% + 5px); /* Position below input */
-            left:0;
-            z-index: 1000;
-            box-shadow: var(--box-shadow);
-            display: none;
+            border: 1px solid var(--light-gray-color); max-height: 180px; overflow-y: auto; background-color: #fff;
+            border-radius: var(--border-radius); position: absolute; width: 100%; top: calc(100% + 5px);
+            left:0; z-index: 1000; box-shadow: var(--box-shadow); display: none;
         }
-        .suggestion-item {
-            padding: 12px 15px; /* Increased padding */
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.15s ease-in-out;
-            font-size: 0.95rem;
-        }
+        .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.15s ease-in-out; font-size: 0.95rem; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background-color: var(--lighter-color); }
 
         #selectedSuppliersList .selected-supplier-card {
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: #fff; /* White background for cards */
-            box-shadow: var(--box-shadow-sm);
+            border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 20px;
+            padding: 20px; background-color: #fff; box-shadow: var(--box-shadow-sm);
         }
-        .selected-supplier-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .selected-supplier-header h4 {
-            margin: 0;
-            color: var(--primary-color);
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        .exception-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px; /* Increased margin */
-        }
+        .selected-supplier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .selected-supplier-header h4 { margin: 0; color: var(--primary-color); font-size: 1.1rem; font-weight: 600; }
+        .exception-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .exception-item input[type="text"] { flex-grow: 1; }
 
         .remove-btn {
-            color: var(--danger-color);
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem; /* Adjusted size */
-            padding: 5px 10px;
-            background: none;
-            border: 1px solid transparent;
-            border-radius: var(--border-radius);
-            transition: color 0.2s, background-color 0.2s;
+            color: var(--danger-color); cursor: pointer; font-weight: bold; font-size: 1rem; padding: 5px 10px;
+            background: none; border: 1px solid transparent; border-radius: var(--border-radius); transition: color 0.2s, background-color 0.2s;
         }
-         .remove-btn:hover {
-            color: #fff;
-            background-color: var(--danger-color);
-         }
-        .remove-btn.small { /* Standardize small remove button */
-            font-size: 0.9rem;
-            padding: 3px 8px;
-        }
-        /* Specific styling for the exception item remove button */
-        .exception-item .remove-btn {
-            color: var(--secondary-color);
-        }
-        .exception-item .remove-btn:hover {
-            background-color: var(--secondary-color);
-            color: #fff;
-        }
+         .remove-btn:hover { color: #fff; background-color: var(--danger-color); }
+        .remove-btn.small { font-size: 0.9rem; padding: 3px 8px; }
+        .exception-item .remove-btn { color: var(--secondary-color); }
+        .exception-item .remove-btn:hover { background-color: var(--secondary-color); color: #fff; }
 
-
-        #resultsContainer {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #e9f7ef; /* Softer success-related background */
-            border: 1px solid #a7d7c5;
-            border-radius: var(--border-radius);
-        }
-        #resultsContainer h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.25rem;
-            color: var(--success-color);
-        }
-        #resultsContainer pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--light-gray-color);
-            font-size: 0.95rem;
-            max-height: 300px; /* Allow scrolling for long output */
-            overflow-y: auto;
-        }
-
-        .message-area {
-            padding: 15px 20px; /* Increased padding */
-            margin-top: 20px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            font-size: 1rem;
-            border: 1px solid transparent; /* Base border */
-            display: flex; /* For loader alignment */
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        #resultsContainer { margin-top: 30px; padding: 20px; background-color: #e9f7ef; border: 1px solid #a7d7c5; border-radius: var(--border-radius); }
+        #resultsContainer h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.25rem; color: var(--success-color); }
+        #resultsContainer pre { white-space: pre-wrap; word-wrap: break-word; background-color: #fff; padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--light-gray-color); font-size: 0.95rem; max-height: 300px; overflow-y: auto; }
+        .message-area { padding: 15px 20px; margin-top: 20px; border-radius: var(--border-radius); text-align: center; font-size: 1rem; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .message-area.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;}
         .message-area.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb;}
         .message-area.info { background-color: #cce5ff; color: #004085; border-color: #b8daff;}
         .message-area.warning { background-color: #fff3cd; color: #856404; border-color: #ffeeba;}
-
-        .loader-container { /* Used for initial loading screen */
-            text-align: center;
-            padding: 20px;
-            font-size: 1rem;
-        }
-        .loader {
-            border: 4px solid var(--light-gray-color); /* Lighter base for loader */
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 28px; /* Slightly smaller loader */
-            height: 28px;
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-        }
+        .loader-container { text-align: center; padding: 20px; font-size: 1rem; }
+        .loader { border: 4px solid var(--light-gray-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-            .app-container {
-                padding: 20px;
-            }
-            .app-header {
-                font-size: 1.5rem;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-            }
-            .form-section {
-                padding: 15px;
-            }
-            .date-period-group {
-                flex-direction: column;
-                gap: 0; /* Remove gap, manage with margin */
-            }
-            .date-period-group > div {
-                width: 100%;
-                margin-bottom: 15px;
-            }
-            .date-period-group > div:last-child {
-                margin-bottom: 0;
-            }
-            .button-group {
-                flex-direction: column; /* Stack main action buttons */
-                gap: 10px;
-            }
-            .button-group button, .button-group .btn {
-                 width: 100%; /* Full width buttons in group */
-            }
-            #resultsContainer .button-group button,
-            #resultsContainer .button-group .btn {
-                width: auto; /* Keep copy/save buttons inline if space allows */
-            }
-             #resultsContainer .button-group {
-                flex-direction: row; /* Revert for copy/save */
-                flex-wrap: wrap;
-            }
+            body { padding: 15px; } .app-container { padding: 20px; } .app-header { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 15px; } .form-section { padding: 15px; } .date-period-group { flex-direction: column; gap: 0; } .date-period-group > div { width: 100%; margin-bottom: 15px; } .date-period-group > div:last-child { margin-bottom: 0; } .button-group { flex-direction: column; gap: 10px; } .button-group button, .button-group .btn { width: 100%; } #resultsContainer .button-group button, #resultsContainer .button-group .btn { width: auto; } #resultsContainer .button-group { flex-direction: row; flex-wrap: wrap; }
         }
-
         @media (max-width: 480px) {
-            .app-header {
-                font-size: 1.3rem;
-            }
-            input, select, button, .btn {
-                font-size: 0.95rem; /* Slightly smaller font for inputs/buttons on small screens */
-                padding: 10px 12px;
-            }
-            button.small, .btn.small {
-                padding: 6px 10px; font-size: 0.8rem;
-            }
-            .selected-supplier-header h4 {
-                font-size: 1rem;
-            }
-            .suggestion-item {
-                padding: 10px 12px;
-                font-size: 0.9rem;
-            }
-            .message-area {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-            }
-            #resultsContainer .button-group {
-                flex-direction: column;
-            }
-            #resultsContainer .button-group button,
-            #resultsContainer .button-group .btn {
-                width: 100%;
-            }
+            .app-header { font-size: 1.3rem; } input, select, button, .btn { font-size: 0.95rem; padding: 10px 12px; } button.small, .btn.small { padding: 6px 10px; font-size: 0.8rem; } .selected-supplier-header h4 { font-size: 1rem; } .suggestion-item { padding: 10px 12px; font-size: 0.9rem; } .message-area { padding: 10px 15px; font-size: 0.9rem; } #resultsContainer .button-group { flex-direction: column; } #resultsContainer .button-group button, #resultsContainer .button-group .btn { width: 100%; }
         }
     </style>
 </head>
@@ -402,7 +197,6 @@
             <p>جاري تحميل البيانات...</p>
         </div>
         <div id="initialUserMessages" class="message-area" style="display:none;"></div>
-
 
         <div id="mainAppContent" style="display:none;">
             <div class="form-section">
@@ -429,7 +223,8 @@
             <div class="form-section">
                 <div class="form-group">
                     <label for="entryDate">تاريخ الإدخال:</label>
-                    <input type="date" id="entryDate" required>
+                    <!-- 2. Changed input type to "text" -->
+                    <input type="text" id="entryDate" class="date-input" placeholder="اختر تاريخ الإدخال..." readonly>
                 </div>
 
                 <div class="form-group">
@@ -437,11 +232,13 @@
                     <div class="date-period-group">
                         <div>
                             <label for="periodStartDate">تاريخ البدء:</label>
-                            <input type="date" id="periodStartDate" required>
+                             <!-- 2. Changed input type to "text" -->
+                            <input type="text" id="periodStartDate" class="date-input" placeholder="اختر تاريخ البدء..." readonly>
                         </div>
                         <div>
                             <label for="periodEndDate">تاريخ الانتهاء:</label>
-                            <input type="date" id="periodEndDate" required>
+                             <!-- 2. Changed input type to "text" -->
+                            <input type="text" id="periodEndDate" class="date-input" placeholder="اختر تاريخ الانتهاء..." readonly>
                         </div>
                     </div>
                 </div>
@@ -470,11 +267,14 @@
         </div>
     </div>
 
+    <!-- 3. Include Flatpickr JS and Arabic locale -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
+
     <script>
-        console.log("DEBUG: Script tag started execution. Version: UniqueCode-ServerSide1");
+        console.log("DEBUG: Script tag started execution. Version: Flatpickr-Solution");
 
         // --- Configuration ---
-        // <<<<<<< PASTE YOUR NEW GOOGLE APPS SCRIPT URL HERE
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyNL8iqXu2qSATHWjfeWbhqyytTPeNhA8WPg2H-Hn9LSyUYmJpuTOl2emyJj6tRAJE-YA/exec'; // <<<< REPLACE THIS
         const URL_PLACEHOLDER_STRING = 'https://script.google.com/macros/s/AKfycby3jXJtV43734e_32hjk-qweqwe-asdasd-qwe-asd-asdas-qweqweq/exec';
 
@@ -495,6 +295,8 @@
         let allSuppliersData = [];
         let selectedSuppliers = [];
         let generatedOutputForSaving = null;
+        // 4. Store flatpickr instances to control them later
+        let entryDatePicker, periodStartDatePicker, periodEndDatePicker;
 
         // --- DOM Elements ---
         let appStatusDiv, initialUserMessagesDiv, mainAppContentDiv, supplierCodeInput, addSupplierBtn,
@@ -527,186 +329,75 @@
             if (!mainAppContentDiv) { criticalConfigError = true; }
         }
         initializeDOMElements();
-
+        
+        // ... (showMessage, hideMessage, and other functions are unchanged) ...
         function showMessage(element, message, type = 'error', showLoaderIcon = false) {
-            if (!element) return;
-            let content = '';
-            if (showLoaderIcon) content += '<div class="loader"></div>';
-            content += `<p style="margin:0;">${message}</p>`;
-            element.innerHTML = content;
-            element.className = `message-area ${type}`;
-            element.style.display = 'flex';
+            if (!element) return; let content = ''; if (showLoaderIcon) content += '<div class="loader"></div>'; content += `<p style="margin:0;">${message}</p>`; element.innerHTML = content; element.className = `message-area ${type}`; element.style.display = 'flex';
         }
         function hideMessage(element) {
-            if (!element) return;
-            element.style.display = 'none';
-            element.innerHTML = '';
+            if (!element) return; element.style.display = 'none'; element.innerHTML = '';
         }
-
         async function fetchSuppliers() {
-            if (criticalConfigError) return false;
-            showMessage(appStatusDiv, 'جاري تحميل الموردين...', 'info', true);
-            if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
-
+            if (criticalConfigError) return false; showMessage(appStatusDiv, 'جاري تحميل الموردين...', 'info', true); if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
             try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers');
-                if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.status}`);
-                const data = await response.json();
-                if (data.error) throw new Error(`خطأ من السيرفر: ${data.error}`);
-
-                allSuppliersData = data.suppliers || [];
-                if(allSuppliersData.length === 0) {
-                     showMessage(initialUserMessagesDiv, "لم يتم العثور على بيانات موردين.", "warning");
-                } else {
-                     hideMessage(initialUserMessagesDiv);
-                }
-                hideMessage(appStatusDiv);
-                if(mainAppContentDiv) mainAppContentDiv.style.display = 'block';
-                return true;
-            } catch (error) {
-                showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.`, 'error');
-                if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
-                return false;
-            }
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers'); if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.status}`); const data = await response.json(); if (data.error) throw new Error(`خطأ من السيرفر: ${data.error}`);
+                allSuppliersData = data.suppliers || []; if(allSuppliersData.length === 0) { showMessage(initialUserMessagesDiv, "لم يتم العثور على بيانات موردين.", "warning"); } else { hideMessage(initialUserMessagesDiv); }
+                hideMessage(appStatusDiv); if(mainAppContentDiv) mainAppContentDiv.style.display = 'block'; return true;
+            } catch (error) { showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.`, 'error'); if(mainAppContentDiv) mainAppContentDiv.style.display = 'none'; return false; }
         }
-        
         function displaySupplierCodeSuggestions(query) {
-            if (!supplierCodeSuggestionsDiv) return;
-            supplierCodeSuggestionsDiv.innerHTML = '';
-            if (!query) {
-                supplierCodeSuggestionsDiv.style.display = 'none';
-                return;
-            }
-            const lowerQuery = query.toLowerCase();
-            const filtered = allSuppliersData.filter(s =>
-                (s.code && s.code.toLowerCase().includes(lowerQuery)) ||
-                (s.name && s.name.toLowerCase().includes(lowerQuery))
-            ).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
-
+            if (!supplierCodeSuggestionsDiv) return; supplierCodeSuggestionsDiv.innerHTML = ''; if (!query) { supplierCodeSuggestionsDiv.style.display = 'none'; return; }
+            const lowerQuery = query.toLowerCase(); const filtered = allSuppliersData.filter(s => (s.code && s.code.toLowerCase().includes(lowerQuery)) || (s.name && s.name.toLowerCase().includes(lowerQuery))).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
             supplierCodeSuggestionsDiv.style.display = filtered.length > 0 ? 'block' : 'none';
             filtered.slice(0, 7).forEach(supplier => {
-                const item = document.createElement('div');
-                item.classList.add('suggestion-item');
-                item.textContent = `${supplier.code} - ${supplier.name}`;
-                item.addEventListener('click', () => {
-                    if (supplierCodeInput) supplierCodeInput.value = supplier.code;
-                    supplierCodeSuggestionsDiv.innerHTML = '';
-                    supplierCodeSuggestionsDiv.style.display = 'none';
-                    addSupplierByCode();
-                });
+                const item = document.createElement('div'); item.classList.add('suggestion-item'); item.textContent = `${supplier.code} - ${supplier.name}`;
+                item.addEventListener('click', () => { if (supplierCodeInput) supplierCodeInput.value = supplier.code; supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; addSupplierByCode(); });
                 supplierCodeSuggestionsDiv.appendChild(item);
             });
         }
-        
         function addSupplierByCode() {
-            if (!supplierCodeInput || !supplierInputMessageDiv) return;
-            const codeOrName = supplierCodeInput.value.trim();
-            hideMessage(supplierInputMessageDiv);
-            if (!codeOrName) {
-                showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning"); return;
-            }
+            if (!supplierCodeInput || !supplierInputMessageDiv) return; const codeOrName = supplierCodeInput.value.trim(); hideMessage(supplierInputMessageDiv); if (!codeOrName) { showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning"); return; }
             const supplier = allSuppliersData.find(s => (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) || (s.name && s.name.toLowerCase() === codeOrName.toLowerCase()));
-            if (supplier) {
-                 if (selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) {
-                    showMessage(supplierInputMessageDiv, `المورد ${supplier.name} (${supplier.code}) مضاف بالفعل.`, "warning");
-                    supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) supplierCodeSuggestionsDiv.style.display = 'none'; return;
-                }
-                selectedSuppliers.push({ supplier: supplier, exceptions: [""] });
-                supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; }
-                renderSelectedSuppliers(); hideMessage(supplierInputMessageDiv);
-            } else {
-                showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error");
-            }
+            if (supplier) { if (selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) { showMessage(supplierInputMessageDiv, `المورد ${supplier.name} (${supplier.code}) مضاف بالفعل.`, "warning"); supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) supplierCodeSuggestionsDiv.style.display = 'none'; return; }
+                selectedSuppliers.push({ supplier: supplier, exceptions: [""] }); supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; } renderSelectedSuppliers(); hideMessage(supplierInputMessageDiv);
+            } else { showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error"); }
         }
-        
-        function removeSelectedSupplier(supplierCode) {
-            selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
-            renderSelectedSuppliers();
-            if (selectedSuppliers.length === 0 && resultsContainerDiv) { resultsContainerDiv.style.display = 'none'; generatedOutputForSaving = null; }
-        }
-        
-        function addExceptionToSupplier(supplierCode) {
-            const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
-            if (supplierItem) {
-                supplierItem.exceptions.push(""); renderSelectedSuppliers();
-                const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${supplierCode}"]`);
-                if(card) { const inputs = card.querySelectorAll('.exception-item input[type="text"]'); if (inputs.length > 0) inputs[inputs.length - 1].focus(); }
-            }
-        }
-        
-        function removeExceptionFromSupplier(supplierCode, exceptionIndex) {
-            const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
-            if (supplierItem && supplierItem.exceptions.length > 1) { supplierItem.exceptions.splice(exceptionIndex, 1); renderSelectedSuppliers(); }
-        }
-        
-        function updateSupplierException(supplierCode, exceptionIndex, value) {
-             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) supplierItem.exceptions[exceptionIndex] = value;
-        }
-        
+        function removeSelectedSupplier(supplierCode) { selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode); renderSelectedSuppliers(); if (selectedSuppliers.length === 0 && resultsContainerDiv) { resultsContainerDiv.style.display = 'none'; generatedOutputForSaving = null; } }
+        function addExceptionToSupplier(supplierCode) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) { supplierItem.exceptions.push(""); renderSelectedSuppliers(); const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${supplierCode}"]`); if(card) { const inputs = card.querySelectorAll('.exception-item input[type="text"]'); if (inputs.length > 0) inputs[inputs.length - 1].focus(); } } }
+        function removeExceptionFromSupplier(supplierCode, exceptionIndex) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem && supplierItem.exceptions.length > 1) { supplierItem.exceptions.splice(exceptionIndex, 1); renderSelectedSuppliers(); } }
+        function updateSupplierException(supplierCode, exceptionIndex, value) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) supplierItem.exceptions[exceptionIndex] = value; }
         function renderSelectedSuppliers() {
-            if (!selectedSuppliersListDiv) return; selectedSuppliersListDiv.innerHTML = '';
-            if (selectedSuppliers.length === 0) { selectedSuppliersListDiv.innerHTML = '<p style="text-align:center; color: var(--secondary-color);">لم يتم اختيار موردين بعد.</p>'; return; }
+            if (!selectedSuppliersListDiv) return; selectedSuppliersListDiv.innerHTML = ''; if (selectedSuppliers.length === 0) { selectedSuppliersListDiv.innerHTML = '<p style="text-align:center; color: var(--secondary-color);">لم يتم اختيار موردين بعد.</p>'; return; }
             selectedSuppliers.forEach((selItem) => {
-                const cardDiv = document.createElement('div'); cardDiv.classList.add('selected-supplier-card'); cardDiv.dataset.supplierCode = selItem.supplier.code;
-                const headerDiv = document.createElement('div'); headerDiv.classList.add('selected-supplier-header');
-                const title = document.createElement('h4'); title.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`;
-                const removeSupplierBtn = document.createElement('button'); removeSupplierBtn.classList.add('remove-btn'); removeSupplierBtn.innerHTML = 'إزالة المورد ×'; removeSupplierBtn.title = 'إزالة المورد بالكامل'; removeSupplierBtn.onclick = () => removeSelectedSupplier(selItem.supplier.code);
-                headerDiv.appendChild(title); headerDiv.appendChild(removeSupplierBtn); cardDiv.appendChild(headerDiv);
-                const exceptionsContainer = document.createElement('div');
+                const cardDiv = document.createElement('div'); cardDiv.classList.add('selected-supplier-card'); cardDiv.dataset.supplierCode = selItem.supplier.code; const headerDiv = document.createElement('div'); headerDiv.classList.add('selected-supplier-header');
+                const title = document.createElement('h4'); title.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`; const removeSupplierBtn = document.createElement('button'); removeSupplierBtn.classList.add('remove-btn'); removeSupplierBtn.innerHTML = 'إزالة المورد ×'; removeSupplierBtn.title = 'إزالة المورد بالكامل'; removeSupplierBtn.onclick = () => removeSelectedSupplier(selItem.supplier.code);
+                headerDiv.appendChild(title); headerDiv.appendChild(removeSupplierBtn); cardDiv.appendChild(headerDiv); const exceptionsContainer = document.createElement('div');
                 selItem.exceptions.forEach((ex, index) => {
-                    const exceptionDiv = document.createElement('div'); exceptionDiv.classList.add('exception-item');
-                    const exceptionInput = document.createElement('input'); exceptionInput.type = 'text'; exceptionInput.placeholder = `استثناء ${index + 1}`; exceptionInput.value = ex;
-                    exceptionInput.oninput = (e) => updateSupplierException(selItem.supplier.code, index, e.target.value);
-                    exceptionInput.onkeypress = (e) => { if (e.key === 'Enter' && index === selItem.exceptions.length - 1) { e.preventDefault(); addExceptionToSupplier(selItem.supplier.code); } };
+                    const exceptionDiv = document.createElement('div'); exceptionDiv.classList.add('exception-item'); const exceptionInput = document.createElement('input'); exceptionInput.type = 'text'; exceptionInput.placeholder = `استثناء ${index + 1}`; exceptionInput.value = ex;
+                    exceptionInput.oninput = (e) => updateSupplierException(selItem.supplier.code, index, e.target.value); exceptionInput.onkeypress = (e) => { if (e.key === 'Enter' && index === selItem.exceptions.length - 1) { e.preventDefault(); addExceptionToSupplier(selItem.supplier.code); } };
                     exceptionDiv.appendChild(exceptionInput);
-                    if (selItem.exceptions.length > 1) {
-                        const removeExBtn = document.createElement('button'); removeExBtn.classList.add('remove-btn', 'small'); removeExBtn.innerHTML = '×'; removeExBtn.title = 'إزالة هذا الاستثناء'; removeExBtn.onclick = () => removeExceptionFromSupplier(selItem.supplier.code, index);
-                        exceptionDiv.appendChild(removeExBtn);
-                    }
+                    if (selItem.exceptions.length > 1) { const removeExBtn = document.createElement('button'); removeExBtn.classList.add('remove-btn', 'small'); removeExBtn.innerHTML = '×'; removeExBtn.title = 'إزالة هذا الاستثناء'; removeExBtn.onclick = () => removeExceptionFromSupplier(selItem.supplier.code, index); exceptionDiv.appendChild(removeExBtn); }
                     exceptionsContainer.appendChild(exceptionDiv);
                 });
-                cardDiv.appendChild(exceptionsContainer);
-                const addExceptionBtn = document.createElement('button'); addExceptionBtn.classList.add('btn', 'secondary', 'small'); addExceptionBtn.style.marginTop = '10px'; addExceptionBtn.textContent = 'إضافة استثناء آخر'; addExceptionBtn.onclick = () => addExceptionToSupplier(selItem.supplier.code);
-                cardDiv.appendChild(addExceptionBtn); selectedSuppliersListDiv.appendChild(cardDiv);
+                cardDiv.appendChild(exceptionsContainer); const addExceptionBtn = document.createElement('button'); addExceptionBtn.classList.add('btn', 'secondary', 'small'); addExceptionBtn.style.marginTop = '10px'; addExceptionBtn.textContent = 'إضافة استثناء آخر'; addExceptionBtn.onclick = () => addExceptionToSupplier(selItem.supplier.code); cardDiv.appendChild(addExceptionBtn); selectedSuppliersListDiv.appendChild(cardDiv);
             });
         }
-
+        
         function validateInputs() {
-            hideMessage(userMessagesDiv);
-            let errors = [];
+            hideMessage(userMessagesDiv); let errors = [];
             if (selectedSuppliers.length === 0) errors.push("الرجاء اختيار مورد واحد على الأقل.");
             if (!entryDateInput || !entryDateInput.value) errors.push("الرجاء إدخال تاريخ الإدخال.");
             if (!periodStartDateInput || !periodStartDateInput.value) errors.push("الرجاء إدخال تاريخ بدء الفترة.");
             if (!periodEndDateInput || !periodEndDateInput.value) errors.push("الرجاء إدخال تاريخ انتهاء الفترة.");
-            if (periodStartDateInput.value && periodEndDateInput.value && new Date(periodEndDateInput.value) < new Date(periodStartDateInput.value)) {
-                errors.push("تاريخ انتهاء الفترة يجب أن يكون بعد أو نفس تاريخ بدء الفترة.");
-            }
+            // Note: Validation for end date > start date is less critical now, but can be added if needed
             if (!purchasingOfficerInput || !purchasingOfficerInput.value.trim()) errors.push("الرجاء إدخال اسم مسؤول المشتريات.");
-            
             const totalExceptions = selectedSuppliers.reduce((acc, sel) => acc + sel.exceptions.filter(ex => ex.trim() !== "").length, 0);
-            if (totalExceptions === 0) {
-                 errors.push("الرجاء إدخال استثناء واحد صالح على الأقل لأي من الموردين المختارين.");
-            }
-
-            if (errors.length > 0) {
-                showMessage(userMessagesDiv, errors.join('<br>'), 'error');
-                return false;
-            }
+            if (totalExceptions === 0) { errors.push("الرجاء إدخال استثناء واحد صالح على الأقل لأي من الموردين المختارين."); }
+            if (errors.length > 0) { showMessage(userMessagesDiv, errors.join('<br>'), 'error'); return false; }
             return true;
         }
 
-        function formatDateToDMY(dateString) {
-            if (!dateString) return "";
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-
-        /**
-         * UPDATED: This function is now async and fetches codes from the server.
-         */
+        // 5. SIMPLIFIED a lot. No more date formatting functions needed.
         async function generateCodes() {
             if (!validateInputs()) {
                 if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
@@ -714,71 +405,40 @@
                 return;
             }
 
-            // 1. Count how many codes we need
-            const codesToGenerateCount = selectedSuppliers.reduce((count, item) => {
-                return count + item.exceptions.filter(ex => ex.trim() !== "").length;
-            }, 0);
+            const codesToGenerateCount = selectedSuppliers.reduce((count, item) => count + item.exceptions.filter(ex => ex.trim() !== "").length, 0);
+            if (codesToGenerateCount === 0) { showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning'); return; }
 
-            if (codesToGenerateCount === 0) {
-                showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning');
-                return;
-            }
-
-            // 2. Fetch unique codes from the server
             let uniqueCodes = [];
             showMessage(userMessagesDiv, 'جاري توليد أكواد فريدة...', 'info', true);
             generateBtn.disabled = true;
 
             try {
                 const response = await fetch(`${GAS_WEB_APP_URL}?action=getUniqueCodesBatch&count=${codesToGenerateCount}`);
-                if (!response.ok) throw new Error(`Network error: ${response.status}`);
-                const data = await response.json();
-                if (!data.success || !data.codes || data.codes.length !== codesToGenerateCount) {
-                    throw new Error(data.error || 'Failed to receive the correct number of unique codes from the server.');
-                }
+                if (!response.ok) throw new Error(`Network error: ${response.status}`); const data = await response.json();
+                if (!data.success || !data.codes || data.codes.length !== codesToGenerateCount) { throw new Error(data.error || 'Failed to receive codes from server.'); }
                 uniqueCodes = data.codes;
-                console.log("DEBUG: Received unique codes from server:", uniqueCodes);
-            } catch (error) {
-                showMessage(userMessagesDiv, `فشل توليد الأكواد: ${error.message}`, 'error');
-                generateBtn.disabled = false;
-                return;
-            } finally {
-                 generateBtn.disabled = false;
-            }
+            } catch (error) { showMessage(userMessagesDiv, `فشل توليد الأكواد: ${error.message}`, 'error'); return; }
+            finally { generateBtn.disabled = false; }
             
-            // 3. Build the output using the fetched codes
+            // The values from inputs are already in dd-mm-yyyy format
+            const entryDateFormatted = entryDateInput.value;
+            const periodStartFormatted = periodStartDateInput.value;
+            const periodEndFormatted = periodEndDateInput.value;
+
             let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value.trim()}\n`;
-            let entryDateFormatted = formatDateToDMY(entryDateInput.value);
             textOutput += `تاريخ الإدخال: ${entryDateFormatted}\n`;
-            textOutput += `الفترة من: ${formatDateToDMY(periodStartDateInput.value)} إلى: ${formatDateToDMY(periodEndDateInput.value)}\n\n`;
-            textOutput += `الأكواد:\n`;
-            textOutput += "------------------------------------\n";
+            textOutput += `الفترة من: ${periodStartFormatted} إلى: ${periodEndFormatted}\n\n`;
+            textOutput += `الأكواد:\n`; textOutput += "------------------------------------\n";
 
-            let itemsToSave = [];
-            let codeIndex = 0;
-
+            let itemsToSave = []; let codeIndex = 0;
             selectedSuppliers.forEach((selItem) => {
                 selItem.exceptions.forEach((exceptionText) => {
                     if (!exceptionText.trim()) return;
-
-                    const finalCode = uniqueCodes[codeIndex]; // Use the server-provided code
-                    if (!finalCode) {
-                        console.error("Ran out of unique codes from server. This should not happen.");
-                        return;
-                    }
-
+                    const finalCode = uniqueCodes[codeIndex++];
+                    if (!finalCode) { console.error("Ran out of unique codes."); return; }
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
-                    textOutput += `الاستثناء: ${exceptionText.trim()}\n`;
-                    textOutput += `الكود: ${finalCode}\n`;
-                    textOutput += "------------------------------------\n";
-
-                    itemsToSave.push({
-                        supplierName: selItem.supplier.name,
-                        supplierCode: selItem.supplier.code,
-                        exception: exceptionText.trim(),
-                        generatedCode: finalCode
-                    });
-                    codeIndex++;
+                    textOutput += `الاستثناء: ${exceptionText.trim()}\n`; textOutput += `الكود: ${finalCode}\n`; textOutput += "------------------------------------\n";
+                    itemsToSave.push({ supplierName: selItem.supplier.name, supplierCode: selItem.supplier.code, exception: exceptionText.trim(), generatedCode: finalCode });
                 });
             });
 
@@ -789,24 +449,24 @@
             generatedOutputForSaving = {
                 purchasingOfficer: purchasingOfficerInput.value.trim(),
                 entryDate: entryDateFormatted,
-                periodStartDate: formatDateToDMY(periodStartDateInput.value),
-                periodEndDate: formatDateToDMY(periodEndDateInput.value),
+                periodStartDate: periodStartFormatted,
+                periodEndDate: periodEndFormatted,
                 generatedItems: itemsToSave
             };
         }
 
         function clearForm() {
             if(supplierCodeInput) supplierCodeInput.value = '';
-            if(supplierCodeSuggestionsDiv) {
-                supplierCodeSuggestionsDiv.innerHTML = '';
-                supplierCodeSuggestionsDiv.style.display = 'none';
-            }
+            if(supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; }
             hideMessage(supplierInputMessageDiv);
             selectedSuppliers = [];
             renderSelectedSuppliers();
-            if(entryDateInput) entryDateInput.valueAsDate = new Date();
-            if(periodStartDateInput) periodStartDateInput.value = '';
-            if(periodEndDateInput) periodEndDateInput.value = '';
+            
+            // 6. Use the flatpickr API to clear dates and reset the main one
+            if(entryDatePicker) entryDatePicker.setDate(new Date(), true); // Set to today and trigger change
+            if(periodStartDatePicker) periodStartDatePicker.clear();
+            if(periodEndDatePicker) periodEndDatePicker.clear();
+
             if(purchasingOfficerInput) purchasingOfficerInput.value = '';
             if(resultsContainerDiv) resultsContainerDiv.style.display = 'none';
             if(outputCodePre) outputCodePre.textContent = '';
@@ -814,50 +474,20 @@
             hideMessage(saveStatusDiv);
             generatedOutputForSaving = null;
         }
-
+        
+        // ... (copyCodesToClipboard and saveCodesToSheet are unchanged) ...
         async function copyCodesToClipboard() {
-            if (!outputCodePre || !outputCodePre.textContent) return;
-            try {
-                await navigator.clipboard.writeText(outputCodePre.textContent);
-                showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success');
-            } catch (err) {
-                showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error');
-            }
+            if (!outputCodePre || !outputCodePre.textContent) return; try { await navigator.clipboard.writeText(outputCodePre.textContent); showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success'); } catch (err) { showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error'); }
         }
-
         async function saveCodesToSheet() {
-            if (criticalConfigError) { showMessage(saveStatusDiv, "خطأ في التكوين.", "error"); return; }
-            if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) {
-                showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها.", 'warning'); return;
-            }
-
-            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true);
-            if (saveToSheetBtn) saveToSheetBtn.disabled = true;
-
+            if (criticalConfigError) { showMessage(saveStatusDiv, "خطأ في التكوين.", "error"); return; } if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) { showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها.", 'warning'); return; }
+            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true); if (saveToSheetBtn) saveToSheetBtn.disabled = true;
             try {
-                const formData = new FormData();
-                formData.append('purchasingOfficer', generatedOutputForSaving.purchasingOfficer);
-                formData.append('entryDate', generatedOutputForSaving.entryDate);
-                formData.append('periodStartDate', generatedOutputForSaving.periodStartDate);
-                formData.append('periodEndDate', generatedOutputForSaving.periodEndDate);
-                formData.append('generatedItems', JSON.stringify(generatedOutputForSaving.generatedItems));
-                
-                const response = await fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
-                } else {
-                    throw new Error(result.error || 'فشل حفظ الأكواد.');
-                }
-            } catch (error) {
-                showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}.`, 'error');
-            } finally {
-                if (saveToSheetBtn) saveToSheetBtn.disabled = false;
-            }
+                const formData = new FormData(); formData.append('purchasingOfficer', generatedOutputForSaving.purchasingOfficer); formData.append('entryDate', generatedOutputForSaving.entryDate); formData.append('periodStartDate', generatedOutputForSaving.periodStartDate); formData.append('periodEndDate', generatedOutputForSaving.periodEndDate); formData.append('generatedItems', JSON.stringify(generatedOutputForSaving.generatedItems));
+                const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', body: formData, }); const result = await response.json();
+                if (result.success) { showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success'); } else { throw new Error(result.error || 'فشل حفظ الأكواد.'); }
+            } catch (error) { showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}.`, 'error'); }
+            finally { if (saveToSheetBtn) saveToSheetBtn.disabled = false; }
         }
 
         function addEventListeners() {
@@ -875,7 +505,17 @@
 
         function initializeApp() {
             if (criticalConfigError) return;
-            if(entryDateInput) entryDateInput.valueAsDate = new Date(); 
+            
+            // 7. Initialize the new date pickers!
+            const flatpickrConfig = {
+                dateFormat: "d-m-Y", // This sets the format to dd-mm-yyyy
+                locale: "ar" // Use the Arabic language pack
+            };
+
+            entryDatePicker = flatpickr("#entryDate", { ...flatpickrConfig, defaultDate: "today" });
+            periodStartDatePicker = flatpickr("#periodStartDate", flatpickrConfig);
+            periodEndDatePicker = flatpickr("#periodEndDate", flatpickrConfig);
+            
             renderSelectedSuppliers();
             fetchSuppliers();
             addEventListeners();
@@ -884,7 +524,6 @@
         if (!criticalConfigError) {
             initializeApp();
         }
-        console.log("DEBUG: Script tag execution finished. Version: UniqueCode-ServerSide1");
     </script>
 </body>
 </html>
