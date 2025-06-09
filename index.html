@@ -161,6 +161,10 @@
         button:active, .btn:active {
             transform: translateY(1px);
         }
+        button:disabled, .btn:disabled {
+            background-color: var(--medium-gray-color);
+            cursor: not-allowed;
+        }
 
         button.secondary, .btn.secondary { background-color: var(--secondary-color); }
         button.secondary:hover, .btn.secondary:hover { background-color: var(--secondary-hover-color); }
@@ -309,7 +313,6 @@
             height: 28px;
             animation: spin 0.8s linear infinite;
             display: inline-block;
-            /* margin: 0 auto 10px auto; Removed margin as message-area handles centering */
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -347,7 +350,6 @@
             .button-group button, .button-group .btn {
                  width: 100%; /* Full width buttons in group */
             }
-            /* Make specific buttons in groups NOT full width if needed */
             #resultsContainer .button-group button,
             #resultsContainer .button-group .btn {
                 width: auto; /* Keep copy/save buttons inline if space allows */
@@ -362,11 +364,7 @@
             .app-header {
                 font-size: 1.3rem;
             }
-            input[type="text"],
-            input[type="date"],
-            input[type="number"],
-            select,
-            button, .btn {
+            input, select, button, .btn {
                 font-size: 0.95rem; /* Slightly smaller font for inputs/buttons on small screens */
                 padding: 10px 12px;
             }
@@ -392,7 +390,6 @@
                 width: 100%;
             }
         }
-
     </style>
 </head>
 <body>
@@ -474,23 +471,25 @@
     </div>
 
     <script>
-        console.log("DEBUG: Script tag started execution. Version: Period-Update1-UIModernized");
+        console.log("DEBUG: Script tag started execution. Version: UniqueCode-ServerSide1");
 
         // --- Configuration ---
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw4mJLO8yXmD29uq6EaTQU5elom-NlnwcxHuNkS1ehs-t-MSL9bsa8obwFmXbt7KEmTMQ/exec'; // <<<<<<< UPDATE THIS
-        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME';
+        // <<<<<<< PASTE YOUR NEW GOOGLE APPS SCRIPT URL HERE
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyNL8iqXu2qSATHWjfeWbhqyytTPeNhA8WPg2H-Hn9LSyUYmJpuTOl2emyJj6tRAJE-YA/exec'; // <<<< REPLACE THIS
+        const URL_PLACEHOLDER_STRING = 'https://script.google.com/macros/s/AKfycby3jXJtV43734e_32hjk-qweqwe-asdasd-qwe-asd-asdas-qweqweq/exec';
 
         let criticalConfigError = false;
-        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_UPDATED_GAS_URL_HERE' || GAS_WEB_APP_URL === 'YOUR_GAS_URL_FOR_FORM_DATA_SCRIPT_HERE') {
+        if (GAS_WEB_APP_URL.includes('...........') || GAS_WEB_APP_URL.includes('PASTE') || GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) {
             criticalConfigError = true;
             const appStatusDivImmediate = document.getElementById('appStatus');
             const mainAppContentDivImmediate = document.getElementById('mainAppContent');
             if(appStatusDivImmediate) {
-                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود.</p>`;
-                appStatusDivImmediate.style.display = 'block'; appStatusDivImmediate.className = 'message-area error';
+                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود واتباع التعليمات.</p>`;
+                appStatusDivImmediate.className = 'message-area error'; appStatusDivImmediate.style.display = 'flex';
             }
             if(mainAppContentDivImmediate) mainAppContentDivImmediate.style.display = 'none';
         }
+
 
         // --- Global State ---
         let allSuppliersData = [];
@@ -532,11 +531,11 @@
         function showMessage(element, message, type = 'error', showLoaderIcon = false) {
             if (!element) return;
             let content = '';
-            if (showLoaderIcon) content += '<div class="loader" style="margin-right:10px;"></div>'; // Added margin for spacing
-            content += `<p style="margin:0;">${message}</p>`; // Wrap message in p for better control
+            if (showLoaderIcon) content += '<div class="loader"></div>';
+            content += `<p style="margin:0;">${message}</p>`;
             element.innerHTML = content;
             element.className = `message-area ${type}`;
-            element.style.display = 'flex'; // Use flex for centering loader and text
+            element.style.display = 'flex';
         }
         function hideMessage(element) {
             if (!element) return;
@@ -546,26 +545,14 @@
 
         async function fetchSuppliers() {
             if (criticalConfigError) return false;
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || !GAS_WEB_APP_URL.trim()) {
-                showMessage(appStatusDiv, "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح.", "error");
-                if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
-                return false;
-            }
             showMessage(appStatusDiv, 'جاري تحميل الموردين...', 'info', true);
             if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
 
             try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers', {
-                    method: 'GET',
-                    mode: 'cors',
-                });
-                if (!response.ok) {
-                    let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                    try { const errData = await response.json(); if(errData && (errData.error || errData.message) ) errorText = errData.error || errData.message; } catch(e){}
-                    throw new Error(errorText);
-                }
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers');
+                if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.status}`);
                 const data = await response.json();
-                if (data.error) throw new Error(`Server error: ${data.error}`);
+                if (data.error) throw new Error(`خطأ من السيرفر: ${data.error}`);
 
                 allSuppliersData = data.suppliers || [];
                 if(allSuppliersData.length === 0) {
@@ -574,7 +561,7 @@
                      hideMessage(initialUserMessagesDiv);
                 }
                 hideMessage(appStatusDiv);
-                if(mainAppContentDiv) mainAppContentDiv.style.display = 'block'; // Or 'flex' if its parent is flex
+                if(mainAppContentDiv) mainAppContentDiv.style.display = 'block';
                 return true;
             } catch (error) {
                 showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.`, 'error');
@@ -582,6 +569,7 @@
                 return false;
             }
         }
+        
         function displaySupplierCodeSuggestions(query) {
             if (!supplierCodeSuggestionsDiv) return;
             supplierCodeSuggestionsDiv.innerHTML = '';
@@ -609,6 +597,7 @@
                 supplierCodeSuggestionsDiv.appendChild(item);
             });
         }
+        
         function addSupplierByCode() {
             if (!supplierCodeInput || !supplierInputMessageDiv) return;
             const codeOrName = supplierCodeInput.value.trim();
@@ -629,11 +618,13 @@
                 showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error");
             }
         }
+        
         function removeSelectedSupplier(supplierCode) {
             selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode);
             renderSelectedSuppliers();
             if (selectedSuppliers.length === 0 && resultsContainerDiv) { resultsContainerDiv.style.display = 'none'; generatedOutputForSaving = null; }
         }
+        
         function addExceptionToSupplier(supplierCode) {
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
             if (supplierItem) {
@@ -642,13 +633,16 @@
                 if(card) { const inputs = card.querySelectorAll('.exception-item input[type="text"]'); if (inputs.length > 0) inputs[inputs.length - 1].focus(); }
             }
         }
+        
         function removeExceptionFromSupplier(supplierCode, exceptionIndex) {
             const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode);
             if (supplierItem && supplierItem.exceptions.length > 1) { supplierItem.exceptions.splice(exceptionIndex, 1); renderSelectedSuppliers(); }
         }
+        
         function updateSupplierException(supplierCode, exceptionIndex, value) {
              const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) supplierItem.exceptions[exceptionIndex] = value;
         }
+        
         function renderSelectedSuppliers() {
             if (!selectedSuppliersListDiv) return; selectedSuppliersListDiv.innerHTML = '';
             if (selectedSuppliers.length === 0) { selectedSuppliersListDiv.innerHTML = '<p style="text-align:center; color: var(--secondary-color);">لم يتم اختيار موردين بعد.</p>'; return; }
@@ -688,20 +682,18 @@
                 errors.push("تاريخ انتهاء الفترة يجب أن يكون بعد أو نفس تاريخ بدء الفترة.");
             }
             if (!purchasingOfficerInput || !purchasingOfficerInput.value.trim()) errors.push("الرجاء إدخال اسم مسؤول المشتريات.");
-            selectedSuppliers.forEach((sel) => {
-                const nonEmptyExceptions = sel.exceptions.filter(ex => ex.trim() !== "");
-                if (nonEmptyExceptions.length === 0) {
-                    errors.push(`الرجاء إدخال استثناء واحد على الأقل للمورد: ${sel.supplier.name}.`);
-                }
-            });
+            
+            const totalExceptions = selectedSuppliers.reduce((acc, sel) => acc + sel.exceptions.filter(ex => ex.trim() !== "").length, 0);
+            if (totalExceptions === 0) {
+                 errors.push("الرجاء إدخال استثناء واحد صالح على الأقل لأي من الموردين المختارين.");
+            }
+
             if (errors.length > 0) {
                 showMessage(userMessagesDiv, errors.join('<br>'), 'error');
                 return false;
             }
             return true;
         }
-
-        function getKDMNumberPart(index) { return String(index % 11).padStart(2, '0'); }
 
         function formatDateToDMY(dateString) {
             if (!dateString) return "";
@@ -712,24 +704,49 @@
             return `${day}/${month}/${year}`;
         }
 
-        function generateCodes() {
+        /**
+         * UPDATED: This function is now async and fetches codes from the server.
+         */
+        async function generateCodes() {
             if (!validateInputs()) {
                 if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
                 generatedOutputForSaving = null;
                 return;
             }
-            const entryDateForKDM = entryDateInput.value;
-            const datePartsKDM = entryDateForKDM.split('-');
-            const yearKDM = parseInt(datePartsKDM[0], 10);
-            const monthJsKDM = parseInt(datePartsKDM[1], 10) - 1;
-            const dayKDM = parseInt(datePartsKDM[2], 10);
-            const localDateKDM = new Date(yearKDM, monthJsKDM, dayKDM);
 
-            const monthNameKDM = localDateKDM.toLocaleString('en-US', { month: 'long' });
-            const dayNameKDM = localDateKDM.toLocaleString('en-US', { weekday: 'long' });
-            const monthInitialKDM = monthNameKDM.charAt(0).toUpperCase();
-            const dayInitialKDM = dayNameKDM.charAt(0).toUpperCase();
+            // 1. Count how many codes we need
+            const codesToGenerateCount = selectedSuppliers.reduce((count, item) => {
+                return count + item.exceptions.filter(ex => ex.trim() !== "").length;
+            }, 0);
 
+            if (codesToGenerateCount === 0) {
+                showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning');
+                return;
+            }
+
+            // 2. Fetch unique codes from the server
+            let uniqueCodes = [];
+            showMessage(userMessagesDiv, 'جاري توليد أكواد فريدة...', 'info', true);
+            generateBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${GAS_WEB_APP_URL}?action=getUniqueCodesBatch&count=${codesToGenerateCount}`);
+                if (!response.ok) throw new Error(`Network error: ${response.status}`);
+                const data = await response.json();
+                if (!data.success || !data.codes || data.codes.length !== codesToGenerateCount) {
+                    throw new Error(data.error || 'Failed to receive the correct number of unique codes from the server.');
+                }
+                uniqueCodes = data.codes;
+                console.log("DEBUG: Received unique codes from server:", uniqueCodes);
+            } catch (error) {
+                showMessage(userMessagesDiv, `فشل توليد الأكواد: ${error.message}`, 'error');
+                generateBtn.disabled = false;
+                return;
+            } finally {
+                 generateBtn.disabled = false;
+            }
+            
+            // 3. Build the output using the fetched codes
             let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value.trim()}\n`;
             let entryDateFormatted = formatDateToDMY(entryDateInput.value);
             textOutput += `تاريخ الإدخال: ${entryDateFormatted}\n`;
@@ -738,20 +755,17 @@
             textOutput += "------------------------------------\n";
 
             let itemsToSave = [];
-            let kdmGlobalIndex = 0;
+            let codeIndex = 0;
 
             selectedSuppliers.forEach((selItem) => {
                 selItem.exceptions.forEach((exceptionText) => {
                     if (!exceptionText.trim()) return;
-                    const kdmPart = "KDM" + getKDMNumberPart(kdmGlobalIndex);
-                    let supplierCodePart = selItem.supplier.code.toUpperCase();
-                    if (supplierCodePart.length === 2) supplierCodePart = supplierCodePart.padEnd(3, 'X');
-                    else if (supplierCodePart.length > 3) supplierCodePart = supplierCodePart.substring(0, 3);
-                    else if (supplierCodePart.length < 2 && supplierCodePart.length > 0) supplierCodePart = supplierCodePart.padEnd(3, 'Y');
-                    else if (supplierCodePart.length === 0) supplierCodePart = "ZZZ";
 
-                    const dateInitialsPart = monthInitialKDM + dayInitialKDM;
-                    const finalCode = kdmPart + supplierCodePart + dateInitialsPart;
+                    const finalCode = uniqueCodes[codeIndex]; // Use the server-provided code
+                    if (!finalCode) {
+                        console.error("Ran out of unique codes from server. This should not happen.");
+                        return;
+                    }
 
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
                     textOutput += `الاستثناء: ${exceptionText.trim()}\n`;
@@ -764,16 +778,9 @@
                         exception: exceptionText.trim(),
                         generatedCode: finalCode
                     });
-                    kdmGlobalIndex++;
+                    codeIndex++;
                 });
             });
-
-            if (itemsToSave.length === 0) {
-                 showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning');
-                 if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
-                 generatedOutputForSaving = null;
-                 return;
-            }
 
             if (outputCodePre) outputCodePre.textContent = textOutput;
             if (resultsContainerDiv) resultsContainerDiv.style.display = 'block';
@@ -786,7 +793,6 @@
                 periodEndDate: formatDateToDMY(periodEndDateInput.value),
                 generatedItems: itemsToSave
             };
-            console.log("DEBUG: Generated output for saving:", generatedOutputForSaving);
         }
 
         function clearForm() {
@@ -820,11 +826,7 @@
         }
 
         async function saveCodesToSheet() {
-            console.log("DEBUG: saveCodesToSheet called (FormData method with Period).");
-            if (criticalConfigError) { showMessage(saveStatusDiv, "خطأ في التكوين: لم يتم إعداد رابط الخدمة.", "error"); return; }
-            if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_UPDATED_GAS_URL_HERE' || !GAS_WEB_APP_URL.trim()) {
-                showMessage(saveStatusDiv, "خطأ فادح: رابط Google Apps Script غير مُعرف بشكل صحيح.", 'error'); return;
-            }
+            if (criticalConfigError) { showMessage(saveStatusDiv, "خطأ في التكوين.", "error"); return; }
             if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) {
                 showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها.", 'warning'); return;
             }
@@ -839,43 +841,19 @@
                 formData.append('periodStartDate', generatedOutputForSaving.periodStartDate);
                 formData.append('periodEndDate', generatedOutputForSaving.periodEndDate);
                 formData.append('generatedItems', JSON.stringify(generatedOutputForSaving.generatedItems));
-
-                console.log("DEBUG: Saving to URL (Period):", GAS_WEB_APP_URL, " FormData being sent:", {
-                    officer: generatedOutputForSaving.purchasingOfficer,
-                    entry: generatedOutputForSaving.entryDate,
-                    start: generatedOutputForSaving.periodStartDate,
-                    end: generatedOutputForSaving.periodEndDate,
-                    itemsLen: generatedOutputForSaving.generatedItems.length
-                });
-
+                
                 const response = await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'cors',
                     body: formData,
                 });
-                console.log("DEBUG: Save response status (Period):", response.status, "Ok:", response.ok);
-
-                if (!response.ok) {
-                     let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
-                     let responseBodyText = await response.text();
-                     console.error("DEBUG: Save !response.ok (Period). Raw text:", responseBodyText);
-                    try {
-                        const errData = JSON.parse(responseBodyText);
-                        if(errData && (errData.message || errData.error)) errorText = errData.message || errData.error;
-                    } catch(e){ if (responseBodyText && responseBodyText.length < 200) errorText += " Server response: " + responseBodyText; }
-                    throw new Error(errorText);
-                }
 
                 const result = await response.json();
-                console.log("DEBUG: Received data from GAS for save (Period):", result);
-
                 if (result.success) {
                     showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success');
                 } else {
-                    throw new Error(result.message || result.error || 'فشل حفظ الأكواد.');
+                    throw new Error(result.error || 'فشل حفظ الأكواد.');
                 }
             } catch (error) {
-                console.error("DEBUG: Error in saveCodesToSheet (Period):", error.message, error);
                 showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}.`, 'error');
             } finally {
                 if (saveToSheetBtn) saveToSheetBtn.disabled = false;
@@ -894,6 +872,7 @@
             if (copyCodesBtn) copyCodesBtn.addEventListener('click', copyCodesToClipboard);
             if (saveToSheetBtn) saveToSheetBtn.addEventListener('click', saveCodesToSheet);
         }
+
         function initializeApp() {
             if (criticalConfigError) return;
             if(entryDateInput) entryDateInput.valueAsDate = new Date(); 
@@ -905,7 +884,7 @@
         if (!criticalConfigError) {
             initializeApp();
         }
-        console.log("DEBUG: Script tag execution finished. Version: Period-Update1-UIModernized");
+        console.log("DEBUG: Script tag execution finished. Version: UniqueCode-ServerSide1");
     </script>
 </body>
 </html>
