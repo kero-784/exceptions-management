@@ -3,451 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ادارة الاستثناءات</title>
-    <!-- 1. Include Flatpickr CSS -->
+    <title>ادارة الاستثناءات المتقدمة</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #007bff;
-            --primary-hover-color: #0056b3;
+            --primary-hover-color: #0069d9;
             --secondary-color: #6c757d;
-            --secondary-hover-color: #545b62;
+            --secondary-hover-color: #5a6268;
             --success-color: #28a745;
-            --success-hover-color: #1e7e34;
+            --success-hover-color: #218838;
             --danger-color: #dc3545;
             --danger-hover-color: #c82333;
             --warning-color: #ffc107;
             --info-color: #17a2b8;
             --light-color: #f8f9fa;
-            --lighter-color: #e9ecef; /* For body background */
             --dark-color: #343a40;
-            --medium-gray-color: #adb5bd;
-            --light-gray-color: #ced4da;
             --border-color: #dee2e6;
-            --font-family: 'Tajawal', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --border-radius: 0.375rem; /* Slightly larger */
-            --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            --box-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --text-color: #212529;
+            --body-bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.06);
+            --border-radius: 0.5rem;
+            --font-family: 'Tajawal', sans-serif;
+            --transition-speed: 0.2s;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
+        html.dark-mode {
+            --primary-color: #0d6efd;
+            --primary-hover-color: #0b5ed7;
+            --secondary-color: #6c757d;
+            --secondary-hover-color: #5c636a;
+            --light-color: #343a40;
+            --dark-color: #f8f9fa;
+            --border-color: #495057;
+            --text-color: #e9ecef;
+            --body-bg: #121212;
+            --card-bg: #1e1e1e;
+            --shadow: 0 4px 15px rgba(0,0,0,0.25);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
 
         body {
             font-family: var(--font-family);
             margin: 0;
-            background-color: var(--lighter-color);
-            color: var(--dark-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            line-height: 1.7;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
         }
 
-        .app-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+        .container {
             width: 100%;
-            max-width: 850px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 25px;
         }
 
         .app-header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 1.75rem;
-            font-weight: 600;
+        }
+
+        .app-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
             color: var(--primary-color);
+            margin: 0;
         }
 
-        .form-section {
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
+        .header-actions { display: flex; gap: 10px; }
+
+        .theme-toggle {
+            background: none; border: 1px solid var(--border-color); color: var(--secondary-color);
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: all var(--transition-speed) ease;
+        }
+        .theme-toggle:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .theme-toggle svg { width: 20px; height: 20px; }
+        .theme-toggle .moon-icon { display: none; }
+        html.dark-mode .theme-toggle .sun-icon { display: none; }
+        html.dark-mode .theme-toggle .moon-icon { display: inline-block; }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 25px 30px;
             border-radius: var(--border-radius);
-            background-color: var(--light-color);
-        }
-        .form-section:last-of-type {
-            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            transition: background-color var(--transition-speed) ease;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding-bottom: 15px; margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
         }
+        .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary-color); }
+        .card-header svg { width: 24px; height: 24px; color: var(--primary-color); }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-            font-size: 0.95rem;
-        }
-
-        input[type="text"],
-        input[type="date"], /* Keep for styling consistency, but will be text */
-        input[type="number"],
-        select {
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        
+        input[type="text"], select {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid var(--light-gray-color);
+            border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
-            box-sizing: border-box;
             font-size: 1rem;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            background-color: #fff; /* Ensure text inputs have white background */
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: all var(--transition-speed) ease;
         }
-        
-        /* Make date inputs look clickable */
-        input.date-input {
-            cursor: pointer;
-        }
-
+        input.date-input { cursor: pointer; }
         input:focus, select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
             outline: none;
         }
+        input.is-invalid { border-color: var(--danger-color); }
+        input.is-invalid:focus { box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25); }
 
-        .input-group { display: flex; gap: 10px; align-items: center; }
-        .input-group input[type="text"] { flex-grow: 1; }
-        .input-group .btn { flex-shrink: 0; }
-        .date-period-group { display: flex; gap: 20px; align-items: flex-start; }
-        .date-period-group > div { flex: 1; }
-        .date-period-group label { font-size:0.9em; margin-bottom:6px; color: var(--secondary-color); }
-        .button-group { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; justify-content: flex-start; }
 
-        button, .btn {
-            background-color: var(--primary-color); color: white; padding: 12px 22px; border: none;
-            border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 500;
-            transition: background-color 0.2s ease-in-out, box-shadow 0.1s ease-in-out;
-            text-decoration: none; display: inline-block; line-height: 1.5;
+        .btn {
+            background-color: var(--primary-color); color: white; padding: 10px 20px; border: none;
+            border-radius: var(--border-radius); cursor: pointer; font-size: 0.95rem; font-weight: 500;
+            transition: all var(--transition-speed) ease; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
         }
-        button:hover, .btn:hover { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-sm); }
-        button:active, .btn:active { transform: translateY(1px); }
-        button:disabled, .btn:disabled { background-color: var(--medium-gray-color); cursor: not-allowed; }
-        button.secondary, .btn.secondary { background-color: var(--secondary-color); }
-        button.secondary:hover, .btn.secondary:hover { background-color: var(--secondary-hover-color); }
-        button.success, .btn.success { background-color: var(--success-color); }
-        button.success:hover, .btn.success:hover { background-color: var(--success-hover-color); }
-        button.danger, .btn.danger { background-color: var(--danger-color); }
-        button.danger:hover, .btn.danger:hover { background-color: var(--danger-hover-color); }
-        button.small, .btn.small { padding: 8px 15px; font-size: 0.875rem; }
+        .btn:hover { background-color: var(--primary-hover-color); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { background-color: var(--secondary-color); cursor: not-allowed; opacity: 0.65; }
+        .btn.secondary { background-color: var(--secondary-color); }
+        .btn.secondary:hover { background-color: var(--secondary-hover-color); }
+        .btn.success { background-color: var(--success-color); }
+        .btn.success:hover { background-color: var(--success-hover-color); }
+        .btn.danger { background-color: var(--danger-color); }
+        .btn.danger:hover { background-color: var(--danger-hover-color); }
+        .btn.small { padding: 6px 12px; font-size: 0.85rem; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 
         #supplierCodeSuggestions {
-            border: 1px solid var(--light-gray-color); max-height: 180px; overflow-y: auto; background-color: #fff;
+            border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; background-color: var(--card-bg);
             border-radius: var(--border-radius); position: absolute; width: 100%; top: calc(100% + 5px);
-            left:0; z-index: 1000; box-shadow: var(--box-shadow); display: none;
+            left:0; z-index: 1000; box-shadow: var(--shadow); display: none;
         }
-        .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.15s ease-in-out; font-size: 0.95rem; }
+        .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color var(--transition-speed) ease; }
         .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background-color: var(--lighter-color); }
+        .suggestion-item:hover { background-color: var(--primary-color); color: white; }
 
-        #selectedSuppliersList .selected-supplier-card {
-            border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 20px;
-            padding: 20px; background-color: #fff; box-shadow: var(--box-shadow-sm);
+        #selectedSuppliersList .empty-state { text-align: center; padding: 40px 20px; border: 2px dashed var(--border-color); border-radius: var(--border-radius); }
+        #selectedSuppliersList .empty-state svg { width: 50px; height: 50px; color: var(--secondary-color); margin-bottom: 15px; opacity: 0.5; }
+        #selectedSuppliersList .empty-state p { font-weight: 500; color: var(--secondary-color); margin: 0; }
+        
+        .selected-supplier-card {
+            border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 15px;
+            padding: 15px; background-color: var(--body-bg); position: relative;
         }
-        .selected-supplier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
-        .selected-supplier-header h4 { margin: 0; color: var(--primary-color); font-size: 1.1rem; font-weight: 600; }
-        .exception-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .exception-item input[type="text"] { flex-grow: 1; }
-
-        .remove-btn {
-            color: var(--danger-color); cursor: pointer; font-weight: bold; font-size: 1rem; padding: 5px 10px;
-            background: none; border: 1px solid transparent; border-radius: var(--border-radius); transition: color 0.2s, background-color 0.2s;
-        }
-         .remove-btn:hover { color: #fff; background-color: var(--danger-color); }
-        .remove-btn.small { font-size: 0.9rem; padding: 3px 8px; }
+        .selected-supplier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .selected-supplier-header h4 { margin: 0; font-size: 1rem; font-weight: 700; }
+        .exception-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .remove-btn { color: var(--danger-color); cursor: pointer; background: none; border: none; padding: 5px; line-height: 1; }
+        .remove-btn:hover { color: var(--danger-hover-color); }
+        .remove-btn.small { font-size: 0.9rem; }
         .exception-item .remove-btn { color: var(--secondary-color); }
-        .exception-item .remove-btn:hover { background-color: var(--secondary-color); color: #fff; }
+        .exception-item .remove-btn:hover { color: var(--danger-color); }
 
-        #resultsContainer { margin-top: 30px; padding: 20px; background-color: #e9f7ef; border: 1px solid #a7d7c5; border-radius: var(--border-radius); }
-        #resultsContainer h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.25rem; color: var(--success-color); }
-        #resultsContainer pre { white-space: pre-wrap; word-wrap: break-word; background-color: #fff; padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--light-gray-color); font-size: 0.95rem; max-height: 300px; overflow-y: auto; }
-        .message-area { padding: 15px 20px; margin-top: 20px; border-radius: var(--border-radius); text-align: center; font-size: 1rem; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #resultsContainer { margin-top: 25px; display: none; }
+        #resultsContainer pre { white-space: pre-wrap; word-wrap: break-word; background-color: var(--body-bg); padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--border-color); max-height: 350px; overflow-y: auto; font-size: 0.9rem; direction: ltr; text-align: left; }
+
+        .message-area { padding: 12px 20px; margin-top: 20px; border-radius: var(--border-radius); text-align: center; border: 1px solid transparent; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; }
+        .message-area svg { width: 20px; height: 20px; }
         .message-area.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;}
-        .message-area.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb;}
-        .message-area.info { background-color: #cce5ff; color: #004085; border-color: #b8daff;}
-        .message-area.warning { background-color: #fff3cd; color: #856404; border-color: #ffeeba;}
-        .loader-container { text-align: center; padding: 20px; font-size: 1rem; }
-        .loader { border: 4px solid var(--light-gray-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; display: inline-block; }
+        .message-area.success { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;}
+        .message-area.info { background-color: #cff4fc; color: #055160; border-color: #b6effb;}
+        .message-area.warning { background-color: #fff3cd; color: #664d03; border-color: #ffdeeb;}
+        html.dark-mode .message-area.error { background-color: #4f2126; color: #f8d7da; border-color: #721c24; }
+        html.dark-mode .message-area.success { background-color: #153828; color: #d1e7dd; border-color: #0f5132; }
+        html.dark-mode .message-area.info { background-color: #0c3c47; color: #cff4fc; border-color: #055160; }
+        html.dark-mode .message-area.warning { background-color: #4d3c0c; color: #fff3cd; border-color: #664d03; }
+        
+        .loader-container { text-align: center; padding: 40px; }
+        .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media (max-width: 768px) {
-            body { padding: 15px; } .app-container { padding: 20px; } .app-header { font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 15px; } .form-section { padding: 15px; } .date-period-group { flex-direction: column; gap: 0; } .date-period-group > div { width: 100%; margin-bottom: 15px; } .date-period-group > div:last-child { margin-bottom: 0; } .button-group { flex-direction: column; gap: 10px; } .button-group button, .button-group .btn { width: 100%; } #resultsContainer .button-group button, #resultsContainer .button-group .btn { width: auto; } #resultsContainer .button-group { flex-direction: row; flex-wrap: wrap; }
+        .date-period-group { display: flex; gap: 20px; }
+        .date-period-group > div { flex: 1; }
+
+        @media (max-width: 992px) {
+            .app-grid { grid-template-columns: 1fr; }
         }
-        @media (max-width: 480px) {
-            .app-header { font-size: 1.3rem; } input, select, button, .btn { font-size: 0.95rem; padding: 10px 12px; } button.small, .btn.small { padding: 6px 10px; font-size: 0.8rem; } .selected-supplier-header h4 { font-size: 1rem; } .suggestion-item { padding: 10px 12px; font-size: 0.9rem; } .message-area { padding: 10px 15px; font-size: 0.9rem; } #resultsContainer .button-group { flex-direction: column; } #resultsContainer .button-group button, #resultsContainer .button-group .btn { width: 100%; }
+        @media (max-width: 768px) {
+            .app-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .date-period-group { flex-direction: column; gap: 0; }
+            .date-period-group > div { width: 100%; margin-bottom: 20px; }
+            .date-period-group > div:last-child { margin-bottom: 0; }
+            .btn-group { flex-direction: column; width: 100%; }
+            .btn-group .btn { width: 100%; }
+            #resultsContainer .btn-group { flex-direction: row; flex-wrap: wrap; }
+            #resultsContainer .btn-group .btn { width: auto; }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <h1 class="app-header">ادارة الاستثناءات</h1>
-
-        <div id="appStatus" class="message-area loader-container" style="display:none;">
+    <div class="container">
+        <header class="app-header">
+            <h1>إدارة الاستثناءات</h1>
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="theme-toggle" title="تبديل الوضع">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+        </header>
+        
+        <div id="appStatus" class="loader-container" style="display:none;">
             <div class="loader"></div>
-            <p>جاري تحميل البيانات...</p>
+            <p style="margin-top: 15px;">جاري تحميل البيانات...</p>
         </div>
-        <div id="initialUserMessages" class="message-area" style="display:none;"></div>
+        <div id="initialUserMessages"></div>
 
-        <div id="mainAppContent" style="display:none;">
-            <div class="form-section">
-                <label for="supplierCodeInput">إضافة مورد:</label>
-                <div class="form-group">
-                    <div class="input-group">
-                        <div style="flex-grow:1; position:relative;">
+        <main id="mainAppContent" class="app-grid" style="display:none;">
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <h2>اختيار الموردين</h2>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierCodeInput">بحث عن مورد:</label>
+                        <div style="position:relative;">
                            <input type="text" id="supplierCodeInput" placeholder="ادخل كود المورد أو ابحث بالاسم">
                            <div id="supplierCodeSuggestions"></div>
                         </div>
-                        <button id="addSupplierBtn" class="btn success small">إضافة مورد</button>
                     </div>
-                    <div id="supplierInputMessage" class="message-area" style="display:none; font-size:0.9em; padding:8px; margin-top:8px;"></div>
-                </div>
 
-                <div class="form-group">
-                    <label>الموردون المختارون والاستثناءات:</label>
-                    <div id="selectedSuppliersList">
-                        <p>لم يتم اختيار موردين بعد.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <div class="form-group">
-                    <label for="entryDate">تاريخ الإدخال:</label>
-                    <!-- 2. Changed input type to "text" -->
-                    <input type="text" id="entryDate" class="date-input" placeholder="اختر تاريخ الإدخال..." readonly>
-                </div>
-
-                <div class="form-group">
-                    <label>الفترة:</label>
-                    <div class="date-period-group">
-                        <div>
-                            <label for="periodStartDate">تاريخ البدء:</label>
-                             <!-- 2. Changed input type to "text" -->
-                            <input type="text" id="periodStartDate" class="date-input" placeholder="اختر تاريخ البدء..." readonly>
-                        </div>
-                        <div>
-                            <label for="periodEndDate">تاريخ الانتهاء:</label>
-                             <!-- 2. Changed input type to "text" -->
-                            <input type="text" id="periodEndDate" class="date-input" placeholder="اختر تاريخ الانتهاء..." readonly>
+                    <div class="form-group">
+                        <label>الموردون المختارون:</label>
+                        <div id="selectedSuppliersList" style="max-height: 500px; overflow-y: auto; padding: 5px;">
+                            <!-- Selected suppliers will be rendered here -->
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="purchasingOfficer">مسؤول المشتريات:</label>
-                    <input type="text" id="purchasingOfficer" placeholder="ادخل اسم مسؤول المشتريات" required>
+            <div class="main-content">
+                <div class="card">
+                     <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        <h2>تفاصيل الطلب</h2>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryDate">تاريخ الإدخال:</label>
+                        <input type="text" id="entryDate" class="date-input" placeholder="اختر تاريخ الإدخال..." readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>فترة الاستثناء:</label>
+                        <div class="date-period-group">
+                            <div>
+                                <label for="periodStartDate">تاريخ البدء:</label>
+                                <input type="text" id="periodStartDate" class="date-input" placeholder="اختر تاريخ البدء..." readonly>
+                            </div>
+                            <div>
+                                <label for="periodEndDate">تاريخ الانتهاء:</label>
+                                <input type="text" id="periodEndDate" class="date-input" placeholder="اختر تاريخ الانتهاء..." readonly disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchasingOfficer">مسؤول المشتريات:</label>
+                        <input type="text" id="purchasingOfficer" placeholder="ادخل اسم مسؤول المشتريات">
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="generateBtn" class="btn success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                            توليد الأكواد
+                        </button>
+                        <button id="clearFormBtn" class="btn secondary">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            مسح الكل
+                        </button>
+                    </div>
+                     <div id="userMessages"></div>
+                </div>
+
+                <div id="resultsContainer" class="card">
+                    <div class="card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <h2>الأكواد المولدة</h2>
+                    </div>
+                    <pre id="outputCode"></pre>
+                    <div class="btn-group" style="margin-top: 20px;">
+                         <button id="copyCodesBtn" class="btn secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            نسخ الأكواد
+                         </button>
+                         <button id="saveToSheetBtn" class="btn success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1V21c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V7.9c0-.4-.2-.8-.5-1.1L16.6 2.5c-.3-.3-.7-.5-1.1-.5z"></path><path d="M17 21v-6.5a1.5 1.5 0 0 0-1.5-1.5h-7A1.5 1.5 0 0 0 7 14.5V21"></path><path d="M10 10.5h1.5v3H10v-3z"></path></svg>
+                            حفظ إلى Google Sheet
+                         </button>
+                    </div>
+                    <div id="saveStatus"></div>
                 </div>
             </div>
-
-            <div class="button-group">
-                <button id="generateBtn" class="btn success">توليد الأكواد</button>
-                <button id="clearFormBtn" class="btn secondary">مسح الكل</button>
-            </div>
-            <div id="userMessages" class="message-area" style="display:none;"></div>
-
-            <div id="resultsContainer" style="display:none;">
-                <h2>الأكواد المولدة:</h2>
-                <pre id="outputCode"></pre>
-                <div class="button-group">
-                     <button id="copyCodesBtn" class="btn secondary">نسخ الأكواد</button>
-                     <button id="saveToSheetBtn" class="btn success">حفظ إلى Google Sheet</button>
-                </div>
-                <div id="saveStatus" class="message-area" style="display:none;"></div>
-            </div>
-        </div>
+        </main>
     </div>
 
-    <!-- 3. Include Flatpickr JS and Arabic locale -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/ar.js"></script>
 
     <script>
-        console.log("DEBUG: Script tag started execution. Version: Flatpickr-Solution");
-
         // --- Configuration ---
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyNL8iqXu2qSATHWjfeWbhqyytTPeNhA8WPg2H-Hn9LSyUYmJpuTOl2emyJj6tRAJE-YA/exec'; // <<<< REPLACE THIS
-        const URL_PLACEHOLDER_STRING = 'https://script.google.com/macros/s/AKfycby3jXJtV43734e_32hjk-qweqwe-asdasd-qwe-asd-asdas-qweqweq/exec';
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyNL8iqXu2qSATHWjfeWbhqyytTPeNhA8WPg2H-Hn9LSyUYmJpuTOl2emyJj6tRAJE-YA/exec'; // <<<< IMPORTANT: Keep your real URL
+        const URL_PLACEHOLDER_STRING = 'PASTE_YOUR_WEB_APP_URL_HERE';
 
         let criticalConfigError = false;
         if (GAS_WEB_APP_URL.includes('...........') || GAS_WEB_APP_URL.includes('PASTE') || GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING) {
             criticalConfigError = true;
-            const appStatusDivImmediate = document.getElementById('appStatus');
-            const mainAppContentDivImmediate = document.getElementById('mainAppContent');
-            if(appStatusDivImmediate) {
-                appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود واتباع التعليمات.</p>`;
-                appStatusDivImmediate.className = 'message-area error'; appStatusDivImmediate.style.display = 'flex';
-            }
-            if(mainAppContentDivImmediate) mainAppContentDivImmediate.style.display = 'none';
+            document.addEventListener('DOMContentLoaded', () => {
+                const appStatusDivImmediate = document.getElementById('appStatus');
+                const mainAppContentDivImmediate = document.getElementById('mainAppContent');
+                if (appStatusDivImmediate) {
+                    appStatusDivImmediate.innerHTML = `<p style="color:red; font-weight:bold;">خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث الرابط في الكود واتباع التعليمات.</p>`;
+                    appStatusDivImmediate.className = 'message-area error';
+                    appStatusDivImmediate.style.display = 'flex';
+                }
+                if (mainAppContentDivImmediate) mainAppContentDivImmediate.style.display = 'none';
+            });
         }
-
 
         // --- Global State ---
         let allSuppliersData = [];
         let selectedSuppliers = [];
         let generatedOutputForSaving = null;
-        // 4. Store flatpickr instances to control them later
         let entryDatePicker, periodStartDatePicker, periodEndDatePicker;
 
         // --- DOM Elements ---
-        let appStatusDiv, initialUserMessagesDiv, mainAppContentDiv, supplierCodeInput, addSupplierBtn,
-            supplierCodeSuggestionsDiv, supplierInputMessageDiv, selectedSuppliersListDiv, entryDateInput,
-            periodStartDateInput, periodEndDateInput, 
-            purchasingOfficerInput, generateBtn, clearFormBtn, userMessagesDiv,
-            resultsContainerDiv, outputCodePre, copyCodesBtn, saveToSheetBtn, saveStatusDiv;
+        const DOMElements = {};
 
         function initializeDOMElements() {
-            appStatusDiv = document.getElementById('appStatus');
-            initialUserMessagesDiv = document.getElementById('initialUserMessages');
-            mainAppContentDiv = document.getElementById('mainAppContent');
-            supplierCodeInput = document.getElementById('supplierCodeInput');
-            addSupplierBtn = document.getElementById('addSupplierBtn');
-            supplierCodeSuggestionsDiv = document.getElementById('supplierCodeSuggestions');
-            supplierInputMessageDiv = document.getElementById('supplierInputMessage');
-            selectedSuppliersListDiv = document.getElementById('selectedSuppliersList');
-            entryDateInput = document.getElementById('entryDate');
-            periodStartDateInput = document.getElementById('periodStartDate');
-            periodEndDateInput = document.getElementById('periodEndDate');
-            purchasingOfficerInput = document.getElementById('purchasingOfficer');
-            generateBtn = document.getElementById('generateBtn');
-            clearFormBtn = document.getElementById('clearFormBtn');
-            userMessagesDiv = document.getElementById('userMessages');
-            resultsContainerDiv = document.getElementById('resultsContainer');
-            outputCodePre = document.getElementById('outputCode');
-            copyCodesBtn = document.getElementById('copyCodesBtn');
-            saveToSheetBtn = document.getElementById('saveToSheetBtn');
-            saveStatusDiv = document.getElementById('saveStatus');
-            if (!mainAppContentDiv) { criticalConfigError = true; }
+            const ids = [
+                'appStatus', 'initialUserMessages', 'mainAppContent', 'themeToggleBtn',
+                'supplierCodeInput', 'supplierCodeSuggestions', 'selectedSuppliersList',
+                'entryDate', 'periodStartDate', 'periodEndDate', 'purchasingOfficer',
+                'generateBtn', 'clearFormBtn', 'userMessages', 'resultsContainer',
+                'outputCode', 'copyCodesBtn', 'saveToSheetBtn', 'saveStatus'
+            ];
+            ids.forEach(id => DOMElements[id] = document.getElementById(id));
         }
-        initializeDOMElements();
-        
-        // ... (showMessage, hideMessage, and other functions are unchanged) ...
+
+        // --- Utility Functions ---
         function showMessage(element, message, type = 'error', showLoaderIcon = false) {
-            if (!element) return; let content = ''; if (showLoaderIcon) content += '<div class="loader"></div>'; content += `<p style="margin:0;">${message}</p>`; element.innerHTML = content; element.className = `message-area ${type}`; element.style.display = 'flex';
+            if (!element) return;
+            const iconSvg = {
+                error: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+                success: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+                info: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+                warning: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+            };
+            let content = '';
+            if (showLoaderIcon) content += '<div class="loader" style="width:24px; height:24px; border-width:3px;"></div>';
+            else content += iconSvg[type] || '';
+            content += `<p style="margin:0;">${message}</p>`;
+            element.innerHTML = content;
+            element.className = `message-area ${type}`;
+            element.style.display = 'flex';
         }
-        function hideMessage(element) {
-            if (!element) return; element.style.display = 'none'; element.innerHTML = '';
-        }
+        function hideMessage(element) { if (element) element.style.display = 'none'; }
+        
+        // --- Core Application Logic ---
         async function fetchSuppliers() {
-            if (criticalConfigError) return false; showMessage(appStatusDiv, 'جاري تحميل الموردين...', 'info', true); if(mainAppContentDiv) mainAppContentDiv.style.display = 'none';
+            showMessage(DOMElements.appStatus, 'جاري تحميل الموردين...', 'info', true);
+            DOMElements.mainAppContent.style.display = 'none';
             try {
-                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers'); if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.status}`); const data = await response.json(); if (data.error) throw new Error(`خطأ من السيرفر: ${data.error}`);
-                allSuppliersData = data.suppliers || []; if(allSuppliersData.length === 0) { showMessage(initialUserMessagesDiv, "لم يتم العثور على بيانات موردين.", "warning"); } else { hideMessage(initialUserMessagesDiv); }
-                hideMessage(appStatusDiv); if(mainAppContentDiv) mainAppContentDiv.style.display = 'block'; return true;
-            } catch (error) { showMessage(appStatusDiv, `فشل تحميل الموردين: ${error.message}.`, 'error'); if(mainAppContentDiv) mainAppContentDiv.style.display = 'none'; return false; }
+                const response = await fetch(GAS_WEB_APP_URL + '?action=getSuppliers');
+                if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.status}`);
+                const data = await response.json();
+                if (data.error) throw new Error(`خطأ من الخادم: ${data.error}`);
+                allSuppliersData = data.suppliers || [];
+                if (allSuppliersData.length === 0) {
+                    showMessage(DOMElements.initialUserMessages, "تحذير: لم يتم العثور على بيانات موردين في المصدر.", "warning");
+                }
+                DOMElements.appStatus.style.display = 'none';
+                DOMElements.mainAppContent.style.display = 'grid';
+            } catch (error) {
+                showMessage(DOMElements.appStatus, `فشل تحميل الموردين: ${error.message}. يرجى تحديث الصفحة.`, 'error');
+            }
         }
+        
         function displaySupplierCodeSuggestions(query) {
-            if (!supplierCodeSuggestionsDiv) return; supplierCodeSuggestionsDiv.innerHTML = ''; if (!query) { supplierCodeSuggestionsDiv.style.display = 'none'; return; }
-            const lowerQuery = query.toLowerCase(); const filtered = allSuppliersData.filter(s => (s.code && s.code.toLowerCase().includes(lowerQuery)) || (s.name && s.name.toLowerCase().includes(lowerQuery))).filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
-            supplierCodeSuggestionsDiv.style.display = filtered.length > 0 ? 'block' : 'none';
+            const suggestionsDiv = DOMElements.supplierCodeSuggestions;
+            suggestionsDiv.innerHTML = '';
+            if (!query) { suggestionsDiv.style.display = 'none'; return; }
+            const lowerQuery = query.toLowerCase();
+            const filtered = allSuppliersData
+                .filter(s => (s.code && s.code.toLowerCase().includes(lowerQuery)) || (s.name && s.name.toLowerCase().includes(lowerQuery)))
+                .filter(s => !selectedSuppliers.some(sel => sel.supplier.code === s.code));
+            
+            suggestionsDiv.style.display = filtered.length > 0 ? 'block' : 'none';
             filtered.slice(0, 7).forEach(supplier => {
-                const item = document.createElement('div'); item.classList.add('suggestion-item'); item.textContent = `${supplier.code} - ${supplier.name}`;
-                item.addEventListener('click', () => { if (supplierCodeInput) supplierCodeInput.value = supplier.code; supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; addSupplierByCode(); });
-                supplierCodeSuggestionsDiv.appendChild(item);
+                const item = document.createElement('div');
+                item.classList.add('suggestion-item');
+                item.innerHTML = `<strong>${supplier.code}</strong> - ${supplier.name}`;
+                item.addEventListener('click', () => {
+                    addSupplierByCode(supplier.code);
+                    DOMElements.supplierCodeInput.value = '';
+                    suggestionsDiv.style.display = 'none';
+                });
+                suggestionsDiv.appendChild(item);
             });
         }
-        function addSupplierByCode() {
-            if (!supplierCodeInput || !supplierInputMessageDiv) return; const codeOrName = supplierCodeInput.value.trim(); hideMessage(supplierInputMessageDiv); if (!codeOrName) { showMessage(supplierInputMessageDiv, "الرجاء إدخال كود المورد أو جزء من اسمه.", "warning"); return; }
-            const supplier = allSuppliersData.find(s => (s.code && s.code.toUpperCase() === codeOrName.toUpperCase()) || (s.name && s.name.toLowerCase() === codeOrName.toLowerCase()));
-            if (supplier) { if (selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) { showMessage(supplierInputMessageDiv, `المورد ${supplier.name} (${supplier.code}) مضاف بالفعل.`, "warning"); supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) supplierCodeSuggestionsDiv.style.display = 'none'; return; }
-                selectedSuppliers.push({ supplier: supplier, exceptions: [""] }); supplierCodeInput.value = ''; if (supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; } renderSelectedSuppliers(); hideMessage(supplierInputMessageDiv);
-            } else { showMessage(supplierInputMessageDiv, `لم يتم العثور على مورد بالكود أو الاسم: ${codeOrName}`, "error"); }
+
+        function addSupplierByCode(code) {
+            const supplier = allSuppliersData.find(s => s.code.toUpperCase() === code.toUpperCase());
+            if (supplier) {
+                if (selectedSuppliers.some(sel => sel.supplier.code === supplier.code)) return;
+                selectedSuppliers.push({ supplier: supplier, exceptions: [""] });
+                renderSelectedSuppliers();
+            }
         }
-        function removeSelectedSupplier(supplierCode) { selectedSuppliers = selectedSuppliers.filter(sel => sel.supplier.code !== supplierCode); renderSelectedSuppliers(); if (selectedSuppliers.length === 0 && resultsContainerDiv) { resultsContainerDiv.style.display = 'none'; generatedOutputForSaving = null; } }
-        function addExceptionToSupplier(supplierCode) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) { supplierItem.exceptions.push(""); renderSelectedSuppliers(); const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${supplierCode}"]`); if(card) { const inputs = card.querySelectorAll('.exception-item input[type="text"]'); if (inputs.length > 0) inputs[inputs.length - 1].focus(); } } }
-        function removeExceptionFromSupplier(supplierCode, exceptionIndex) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem && supplierItem.exceptions.length > 1) { supplierItem.exceptions.splice(exceptionIndex, 1); renderSelectedSuppliers(); } }
-        function updateSupplierException(supplierCode, exceptionIndex, value) { const supplierItem = selectedSuppliers.find(sel => sel.supplier.code === supplierCode); if (supplierItem) supplierItem.exceptions[exceptionIndex] = value; }
+
         function renderSelectedSuppliers() {
-            if (!selectedSuppliersListDiv) return; selectedSuppliersListDiv.innerHTML = ''; if (selectedSuppliers.length === 0) { selectedSuppliersListDiv.innerHTML = '<p style="text-align:center; color: var(--secondary-color);">لم يتم اختيار موردين بعد.</p>'; return; }
+            const listDiv = DOMElements.selectedSuppliersList;
+            listDiv.innerHTML = '';
+            if (selectedSuppliers.length === 0) {
+                listDiv.innerHTML = `<div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+                    <p>ابحث عن مورد وأضفه لبدء إضافة الاستثناءات.</p>
+                </div>`;
+                return;
+            }
+
             selectedSuppliers.forEach((selItem) => {
-                const cardDiv = document.createElement('div'); cardDiv.classList.add('selected-supplier-card'); cardDiv.dataset.supplierCode = selItem.supplier.code; const headerDiv = document.createElement('div'); headerDiv.classList.add('selected-supplier-header');
-                const title = document.createElement('h4'); title.textContent = `${selItem.supplier.name} (${selItem.supplier.code})`; const removeSupplierBtn = document.createElement('button'); removeSupplierBtn.classList.add('remove-btn'); removeSupplierBtn.innerHTML = 'إزالة المورد ×'; removeSupplierBtn.title = 'إزالة المورد بالكامل'; removeSupplierBtn.onclick = () => removeSelectedSupplier(selItem.supplier.code);
-                headerDiv.appendChild(title); headerDiv.appendChild(removeSupplierBtn); cardDiv.appendChild(headerDiv); const exceptionsContainer = document.createElement('div');
+                const card = document.createElement('div');
+                card.className = 'selected-supplier-card';
+                card.dataset.supplierCode = selItem.supplier.code;
+                
+                let exceptionsHtml = '';
                 selItem.exceptions.forEach((ex, index) => {
-                    const exceptionDiv = document.createElement('div'); exceptionDiv.classList.add('exception-item'); const exceptionInput = document.createElement('input'); exceptionInput.type = 'text'; exceptionInput.placeholder = `استثناء ${index + 1}`; exceptionInput.value = ex;
-                    exceptionInput.oninput = (e) => updateSupplierException(selItem.supplier.code, index, e.target.value); exceptionInput.onkeypress = (e) => { if (e.key === 'Enter' && index === selItem.exceptions.length - 1) { e.preventDefault(); addExceptionToSupplier(selItem.supplier.code); } };
-                    exceptionDiv.appendChild(exceptionInput);
-                    if (selItem.exceptions.length > 1) { const removeExBtn = document.createElement('button'); removeExBtn.classList.add('remove-btn', 'small'); removeExBtn.innerHTML = '×'; removeExBtn.title = 'إزالة هذا الاستثناء'; removeExBtn.onclick = () => removeExceptionFromSupplier(selItem.supplier.code, index); exceptionDiv.appendChild(removeExBtn); }
-                    exceptionsContainer.appendChild(exceptionDiv);
+                    const removeBtnHtml = selItem.exceptions.length > 1 ? `<button class="remove-btn small" onclick="removeExceptionFromSupplier('${selItem.supplier.code}', ${index})" title="إزالة الاستثناء">✖</button>` : '';
+                    exceptionsHtml += `<div class="exception-item">
+                        <input type="text" placeholder="اكتب الاستثناء ${index + 1}" value="${ex}" oninput="updateSupplierException('${selItem.supplier.code}', ${index}, this.value)" onkeypress="handleExceptionInputEnter(event, '${selItem.supplier.code}', ${index}, ${selItem.exceptions.length - 1})">
+                        ${removeBtnHtml}
+                    </div>`;
                 });
-                cardDiv.appendChild(exceptionsContainer); const addExceptionBtn = document.createElement('button'); addExceptionBtn.classList.add('btn', 'secondary', 'small'); addExceptionBtn.style.marginTop = '10px'; addExceptionBtn.textContent = 'إضافة استثناء آخر'; addExceptionBtn.onclick = () => addExceptionToSupplier(selItem.supplier.code); cardDiv.appendChild(addExceptionBtn); selectedSuppliersListDiv.appendChild(cardDiv);
+
+                card.innerHTML = `
+                    <div class="selected-supplier-header">
+                        <h4>${selItem.supplier.name} (${selItem.supplier.code})</h4>
+                        <button class="remove-btn" onclick="removeSelectedSupplier('${selItem.supplier.code}')" title="إزالة المورد بالكامل">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                    <div>${exceptionsHtml}</div>
+                    <button class="btn secondary small" style="margin-top: 10px;" onclick="addExceptionToSupplier('${selItem.supplier.code}')">+ إضافة استثناء</button>
+                `;
+                listDiv.appendChild(card);
             });
         }
         
+        // --- Event Handlers (kept in global scope for inline onclick) ---
+        window.removeSelectedSupplier = (code) => {
+            selectedSuppliers = selectedSuppliers.filter(s => s.supplier.code !== code);
+            renderSelectedSuppliers();
+            if (selectedSuppliers.length === 0) DOMElements.resultsContainer.style.display = 'none';
+        };
+        window.addExceptionToSupplier = (code) => {
+            const item = selectedSuppliers.find(s => s.supplier.code === code);
+            if (item) { item.exceptions.push(""); renderSelectedSuppliers(); }
+            const card = document.querySelector(`.selected-supplier-card[data-supplier-code="${code}"]`);
+            if (card) card.querySelector('input:last-of-type').focus();
+        };
+        window.removeExceptionFromSupplier = (code, index) => {
+            const item = selectedSuppliers.find(s => s.supplier.code === code);
+            if (item && item.exceptions.length > 1) { item.exceptions.splice(index, 1); renderSelectedSuppliers(); }
+        };
+        window.updateSupplierException = (code, index, value) => {
+            const item = selectedSuppliers.find(s => s.supplier.code === code);
+            if (item) item.exceptions[index] = value;
+        };
+        window.handleExceptionInputEnter = (event, code, currentIndex, lastIndex) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (currentIndex === lastIndex) addExceptionToSupplier(code);
+            }
+        };
+
+        // --- Form Actions ---
         function validateInputs() {
-            hideMessage(userMessagesDiv); let errors = [];
+            hideMessage(DOMElements.userMessages);
+            let errors = [];
+            const inputsToValidate = {
+                entryDate: "تاريخ الإدخال مطلوب.",
+                periodStartDate: "تاريخ بدء الفترة مطلوب.",
+                periodEndDate: "تاريخ انتهاء الفترة مطلوب.",
+                purchasingOfficer: "اسم مسؤول المشتريات مطلوب."
+            };
+
+            Object.keys(inputsToValidate).forEach(id => {
+                const input = DOMElements[id];
+                input.classList.remove('is-invalid');
+                if (!input.value.trim()) {
+                    errors.push(inputsToValidate[id]);
+                    input.classList.add('is-invalid');
+                }
+            });
+
             if (selectedSuppliers.length === 0) errors.push("الرجاء اختيار مورد واحد على الأقل.");
-            if (!entryDateInput || !entryDateInput.value) errors.push("الرجاء إدخال تاريخ الإدخال.");
-            if (!periodStartDateInput || !periodStartDateInput.value) errors.push("الرجاء إدخال تاريخ بدء الفترة.");
-            if (!periodEndDateInput || !periodEndDateInput.value) errors.push("الرجاء إدخال تاريخ انتهاء الفترة.");
-            // Note: Validation for end date > start date is less critical now, but can be added if needed
-            if (!purchasingOfficerInput || !purchasingOfficerInput.value.trim()) errors.push("الرجاء إدخال اسم مسؤول المشتريات.");
             const totalExceptions = selectedSuppliers.reduce((acc, sel) => acc + sel.exceptions.filter(ex => ex.trim() !== "").length, 0);
-            if (totalExceptions === 0) { errors.push("الرجاء إدخال استثناء واحد صالح على الأقل لأي من الموردين المختارين."); }
-            if (errors.length > 0) { showMessage(userMessagesDiv, errors.join('<br>'), 'error'); return false; }
+            if (totalExceptions === 0) errors.push("الرجاء إدخال استثناء واحد صالح على الأقل.");
+            
+            if (errors.length > 0) {
+                showMessage(DOMElements.userMessages, errors.join('<br>'), 'error');
+                return false;
+            }
             return true;
         }
 
-        // 5. SIMPLIFIED a lot. No more date formatting functions needed.
         async function generateCodes() {
             if (!validateInputs()) {
-                if (resultsContainerDiv) resultsContainerDiv.style.display = 'none';
+                DOMElements.resultsContainer.style.display = 'none';
                 generatedOutputForSaving = null;
                 return;
             }
 
             const codesToGenerateCount = selectedSuppliers.reduce((count, item) => count + item.exceptions.filter(ex => ex.trim() !== "").length, 0);
-            if (codesToGenerateCount === 0) { showMessage(userMessagesDiv, "لا توجد استثناءات صالحة لتوليد أكواد.", 'warning'); return; }
+            showMessage(DOMElements.userMessages, 'جاري توليد أكواد فريدة...', 'info', true);
+            DOMElements.generateBtn.disabled = true;
 
-            let uniqueCodes = [];
-            showMessage(userMessagesDiv, 'جاري توليد أكواد فريدة...', 'info', true);
-            generateBtn.disabled = true;
-
+            let uniqueCodes;
             try {
                 const response = await fetch(`${GAS_WEB_APP_URL}?action=getUniqueCodesBatch&count=${codesToGenerateCount}`);
-                if (!response.ok) throw new Error(`Network error: ${response.status}`); const data = await response.json();
-                if (!data.success || !data.codes || data.codes.length !== codesToGenerateCount) { throw new Error(data.error || 'Failed to receive codes from server.'); }
+                if (!response.ok) throw new Error(`Network error: ${response.status}`);
+                const data = await response.json();
+                if (!data.success || !data.codes || data.codes.length !== codesToGenerateCount) {
+                    throw new Error(data.error || 'فشل استقبال الأكواد من الخادم.');
+                }
                 uniqueCodes = data.codes;
-            } catch (error) { showMessage(userMessagesDiv, `فشل توليد الأكواد: ${error.message}`, 'error'); return; }
-            finally { generateBtn.disabled = false; }
-            
-            // The values from inputs are already in dd-mm-yyyy format
-            const entryDateFormatted = entryDateInput.value;
-            const periodStartFormatted = periodStartDateInput.value;
-            const periodEndFormatted = periodEndDateInput.value;
+            } catch (error) {
+                showMessage(DOMElements.userMessages, `فشل توليد الأكواد: ${error.message}`, 'error');
+                DOMElements.generateBtn.disabled = false;
+                return;
+            }
 
-            let textOutput = `مسؤول المشتريات: ${purchasingOfficerInput.value.trim()}\n`;
+            const entryDateFormatted = DOMElements.entryDate.value;
+            const periodStartFormatted = DOMElements.periodStartDate.value;
+            const periodEndFormatted = DOMElements.periodEndDate.value;
+            const officer = DOMElements.purchasingOfficer.value.trim();
+
+            let textOutput = `مسؤول المشتريات: ${officer}\n`;
             textOutput += `تاريخ الإدخال: ${entryDateFormatted}\n`;
             textOutput += `الفترة من: ${periodStartFormatted} إلى: ${periodEndFormatted}\n\n`;
-            textOutput += `الأكواد:\n`; textOutput += "------------------------------------\n";
+            textOutput += `الأكواد:\n------------------------------------\n`;
 
-            let itemsToSave = []; let codeIndex = 0;
+            let itemsToSave = [];
+            let codeIndex = 0;
             selectedSuppliers.forEach((selItem) => {
                 selItem.exceptions.forEach((exceptionText) => {
-                    if (!exceptionText.trim()) return;
+                    const trimmedException = exceptionText.trim();
+                    if (!trimmedException) return;
                     const finalCode = uniqueCodes[codeIndex++];
-                    if (!finalCode) { console.error("Ran out of unique codes."); return; }
                     textOutput += `المورد: ${selItem.supplier.name} (${selItem.supplier.code})\n`;
-                    textOutput += `الاستثناء: ${exceptionText.trim()}\n`; textOutput += `الكود: ${finalCode}\n`; textOutput += "------------------------------------\n";
-                    itemsToSave.push({ supplierName: selItem.supplier.name, supplierCode: selItem.supplier.code, exception: exceptionText.trim(), generatedCode: finalCode });
+                    textOutput += `الاستثناء: ${trimmedException}\n`;
+                    textOutput += `الكود: ${finalCode}\n------------------------------------\n`;
+                    itemsToSave.push({ supplierName: selItem.supplier.name, supplierCode: selItem.supplier.code, exception: trimmedException, generatedCode: finalCode });
                 });
             });
 
-            if (outputCodePre) outputCodePre.textContent = textOutput;
-            if (resultsContainerDiv) resultsContainerDiv.style.display = 'block';
-            hideMessage(userMessagesDiv);
+            DOMElements.outputCode.textContent = textOutput;
+            DOMElements.resultsContainer.style.display = 'block';
+            hideMessage(DOMElements.userMessages);
+            DOMElements.generateBtn.disabled = false;
 
             generatedOutputForSaving = {
-                purchasingOfficer: purchasingOfficerInput.value.trim(),
+                purchasingOfficer: officer,
                 entryDate: entryDateFormatted,
                 periodStartDate: periodStartFormatted,
                 periodEndDate: periodEndFormatted,
@@ -456,64 +600,135 @@
         }
 
         function clearForm() {
-            if(supplierCodeInput) supplierCodeInput.value = '';
-            if(supplierCodeSuggestionsDiv) { supplierCodeSuggestionsDiv.innerHTML = ''; supplierCodeSuggestionsDiv.style.display = 'none'; }
-            hideMessage(supplierInputMessageDiv);
+            Object.values(DOMElements).forEach(el => {
+                if (el && el.classList && el.classList.contains('is-invalid')) {
+                    el.classList.remove('is-invalid');
+                }
+            });
+            DOMElements.supplierCodeInput.value = '';
+            hideMessage(DOMElements.supplierCodeSuggestions);
             selectedSuppliers = [];
             renderSelectedSuppliers();
             
-            // 6. Use the flatpickr API to clear dates and reset the main one
-            if(entryDatePicker) entryDatePicker.setDate(new Date(), true); // Set to today and trigger change
-            if(periodStartDatePicker) periodStartDatePicker.clear();
-            if(periodEndDatePicker) periodEndDatePicker.clear();
+            entryDatePicker.setDate(new Date(), true);
+            periodStartDatePicker.clear();
+            periodEndDatePicker.clear();
+            periodEndDatePicker.set('minDate', null);
+            DOMElements.periodEndDate.disabled = true;
 
-            if(purchasingOfficerInput) purchasingOfficerInput.value = '';
-            if(resultsContainerDiv) resultsContainerDiv.style.display = 'none';
-            if(outputCodePre) outputCodePre.textContent = '';
-            hideMessage(userMessagesDiv);
-            hideMessage(saveStatusDiv);
+            DOMElements.purchasingOfficer.value = '';
+            DOMElements.resultsContainer.style.display = 'none';
+            DOMElements.outputCode.textContent = '';
+            hideMessage(DOMElements.userMessages);
+            hideMessage(DOMElements.saveStatus);
             generatedOutputForSaving = null;
         }
-        
-        // ... (copyCodesToClipboard and saveCodesToSheet are unchanged) ...
+
         async function copyCodesToClipboard() {
-            if (!outputCodePre || !outputCodePre.textContent) return; try { await navigator.clipboard.writeText(outputCodePre.textContent); showMessage(saveStatusDiv, 'تم نسخ الأكواد إلى الحافظة!', 'success'); } catch (err) { showMessage(saveStatusDiv, 'فشل النسخ إلى الحافظة.', 'error'); }
-        }
-        async function saveCodesToSheet() {
-            if (criticalConfigError) { showMessage(saveStatusDiv, "خطأ في التكوين.", "error"); return; } if (!generatedOutputForSaving || !generatedOutputForSaving.generatedItems || generatedOutputForSaving.generatedItems.length === 0) { showMessage(saveStatusDiv, "لا توجد أكواد لتسجيلها.", 'warning'); return; }
-            showMessage(saveStatusDiv, 'جاري الحفظ...', 'info', true); if (saveToSheetBtn) saveToSheetBtn.disabled = true;
+            if (!DOMElements.outputCode.textContent) return;
             try {
-                const formData = new FormData(); formData.append('purchasingOfficer', generatedOutputForSaving.purchasingOfficer); formData.append('entryDate', generatedOutputForSaving.entryDate); formData.append('periodStartDate', generatedOutputForSaving.periodStartDate); formData.append('periodEndDate', generatedOutputForSaving.periodEndDate); formData.append('generatedItems', JSON.stringify(generatedOutputForSaving.generatedItems));
-                const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', body: formData, }); const result = await response.json();
-                if (result.success) { showMessage(saveStatusDiv, result.message || 'تم حفظ الأكواد بنجاح!', 'success'); } else { throw new Error(result.error || 'فشل حفظ الأكواد.'); }
-            } catch (error) { showMessage(saveStatusDiv, `فشل حفظ الأكواد: ${error.message}.`, 'error'); }
-            finally { if (saveToSheetBtn) saveToSheetBtn.disabled = false; }
+                await navigator.clipboard.writeText(DOMElements.outputCode.textContent);
+                showMessage(DOMElements.saveStatus, 'تم نسخ الأكواد بنجاح!', 'success');
+            } catch (err) {
+                showMessage(DOMElements.saveStatus, 'فشل النسخ إلى الحافظة.', 'error');
+            }
+        }
+        
+        async function saveCodesToSheet() {
+            if (!generatedOutputForSaving) {
+                showMessage(DOMElements.saveStatus, "لا توجد بيانات مولدة للحفظ.", 'warning');
+                return;
+            }
+            showMessage(DOMElements.saveStatus, 'جاري الحفظ...', 'info', true);
+            DOMElements.saveToSheetBtn.disabled = true;
+            DOMElements.copyCodesBtn.disabled = true; 
+
+            try {
+                const formData = new FormData();
+                Object.keys(generatedOutputForSaving).forEach(key => {
+                    const value = generatedOutputForSaving[key];
+                    formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+                });
+                const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    const successMessage = (result.message || 'تم الحفظ بنجاح!') + ' سيتم مسح النموذج تلقائيًا...';
+                    showMessage(DOMElements.saveStatus, successMessage, 'success');
+                    
+                    setTimeout(() => {
+                        clearForm();
+                    }, 2500);
+                } else {
+                    throw new Error(result.error || 'فشل حفظ الأكواد.');
+                }
+            } catch (error) {
+                showMessage(DOMElements.saveStatus, `فشل الحفظ: ${error.message}.`, 'error');
+                // Re-enable buttons only on error, since success will hide them anyway
+                DOMElements.saveToSheetBtn.disabled = false;
+                DOMElements.copyCodesBtn.disabled = false;
+            }
         }
 
-        function addEventListeners() {
-            if (supplierCodeInput) {
-                supplierCodeInput.addEventListener('input', (e) => displaySupplierCodeSuggestions(e.target.value));
-                supplierCodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (supplierCodeSuggestionsDiv && (supplierCodeSuggestionsDiv.style.display === 'none' || supplierCodeSuggestionsDiv.innerHTML === '')) { addSupplierByCode(); } } });
+
+        // --- New Features: Theme ---
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            htmlEl.classList.toggle('dark-mode');
+            localStorage.setItem('theme', htmlEl.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
             }
-            document.addEventListener('click', function(event) { if (supplierCodeInput && supplierCodeSuggestionsDiv) { const isClickInsideInput = supplierCodeInput.contains(event.target); const isClickInsideSuggestions = supplierCodeSuggestionsDiv.contains(event.target); if (!isClickInsideInput && !isClickInsideSuggestions) { supplierCodeSuggestionsDiv.style.display = 'none'; } } });
-            if (addSupplierBtn) addSupplierBtn.addEventListener('click', addSupplierByCode);
-            if (generateBtn) generateBtn.addEventListener('click', generateCodes);
-            if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
-            if (copyCodesBtn) copyCodesBtn.addEventListener('click', copyCodesToClipboard);
-            if (saveToSheetBtn) saveToSheetBtn.addEventListener('click', saveCodesToSheet);
+        }
+
+        // --- Initialization ---
+        function addEventListeners() {
+            DOMElements.themeToggleBtn.addEventListener('click', toggleTheme);
+            DOMElements.supplierCodeInput.addEventListener('input', (e) => displaySupplierCodeSuggestions(e.target.value));
+            DOMElements.supplierCodeInput.addEventListener('keypress', (e) => {
+                 if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const suggestionsDiv = DOMElements.supplierCodeSuggestions;
+                    const firstSuggestion = suggestionsDiv.querySelector('.suggestion-item');
+                    if (firstSuggestion && suggestionsDiv.style.display !== 'none') {
+                        firstSuggestion.click();
+                    }
+                 }
+            });
+            document.addEventListener('click', (e) => {
+                if (!DOMElements.supplierCodeInput.contains(e.target)) {
+                    DOMElements.supplierCodeSuggestions.style.display = 'none';
+                }
+            });
+            DOMElements.generateBtn.addEventListener('click', generateCodes);
+            DOMElements.clearFormBtn.addEventListener('click', clearForm);
+            DOMElements.copyCodesBtn.addEventListener('click', copyCodesToClipboard);
+            DOMElements.saveToSheetBtn.addEventListener('click', saveCodesToSheet);
         }
 
         function initializeApp() {
             if (criticalConfigError) return;
-            
-            // 7. Initialize the new date pickers!
-            const flatpickrConfig = {
-                dateFormat: "d-m-Y", // This sets the format to dd-mm-yyyy
-                locale: "ar" // Use the Arabic language pack
-            };
+            initializeDOMElements();
+            applySavedTheme();
 
+            const flatpickrConfig = { dateFormat: "d-m-Y", locale: "ar" };
             entryDatePicker = flatpickr("#entryDate", { ...flatpickrConfig, defaultDate: "today" });
-            periodStartDatePicker = flatpickr("#periodStartDate", flatpickrConfig);
+            periodStartDatePicker = flatpickr("#periodStartDate", {
+                ...flatpickrConfig,
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates[0]) {
+                        periodEndDatePicker.set('minDate', selectedDates[0]);
+                        DOMElements.periodEndDate.disabled = false;
+                    } else {
+                        periodEndDatePicker.clear();
+                        DOMElements.periodEndDate.disabled = true;
+                    }
+                }
+            });
             periodEndDatePicker = flatpickr("#periodEndDate", flatpickrConfig);
             
             renderSelectedSuppliers();
@@ -521,9 +736,8 @@
             addEventListeners();
         }
 
-        if (!criticalConfigError) {
-            initializeApp();
-        }
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
     </script>
 </body>
 </html>
